@@ -1,0 +1,3597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Marvis</title>
+<style>
+:root {
+  --bg: #f2f3f7;
+  --white: #ffffff;
+  --surface: #ffffff;
+  --surface2: #f0f1f5;
+  --surface3: #e4e5ea;
+  --accent: #4f6ef7;
+  --accent-light: #7b93fa;
+  --accent-bg: rgba(79,110,247,0.08);
+  --accent-glow: rgba(79,110,247,0.18);
+  --text: #16171d;
+  --text2: #5f6577;
+  --text3: #9399a8;
+  --border: rgba(0,0,0,0.05);
+  --radius: 16px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --shadow: 0 1px 8px rgba(0,0,0,0.05);
+  --shadow-lg: 0 6px 24px rgba(0,0,0,0.08);
+  --card-shadow: 0 2px 16px rgba(0,0,0,0.06);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; overflow:hidden; }
+body {
+  font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+}
+.app {
+  height:100vh; width:100vw;
+  max-width:430px; margin:0 auto;
+  display:flex; flex-direction:column;
+  position:relative; overflow:hidden;
+  background: var(--bg);
+}
+.page {
+  position:absolute; top:0; left:0; right:0; bottom:0;
+  display:flex; flex-direction:column;
+  opacity:0; pointer-events:none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  transform: scale(0.98);
+}
+.page.active {
+  opacity:1; pointer-events:all; transform:scale(1);
+  position:relative; flex:1; min-height:0;
+}
+::-webkit-scrollbar { width:0; }
+
+/* ===== SETUP WIZARD ===== */
+.setup-overlay {
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  background: var(--white);
+  z-index:9999;
+  display:flex; flex-direction:column;
+  max-width:430px; margin:0 auto;
+  transition: opacity 0.4s, transform 0.4s;
+}
+.setup-overlay.hidden { opacity:0; pointer-events:none; transform:translateY(20px); }
+
+.setup-progress {
+  padding:56px 32px 0;
+  display:flex; gap:6px;
+}
+.setup-progress-dot {
+  flex:1; height:3px; border-radius:2px;
+  background: var(--surface2);
+  transition: background 0.3s;
+}
+.setup-progress-dot.active { background: var(--text); }
+.setup-progress-dot.done { background: var(--text); }
+
+.setup-content {
+  flex:1; padding:32px;
+  display:flex; flex-direction:column;
+  overflow-y:auto;
+}
+.setup-step { display:none; flex-direction:column; flex:1; }
+.setup-step.active { display:flex; }
+
+.setup-avatar-area {
+  text-align:center; margin-bottom:32px; margin-top:16px;
+}
+.setup-avatar {
+  width:96px; height:96px; border-radius:50%;
+  object-fit:cover;
+  border:3px solid var(--text);
+  box-shadow: 0 0 0 5px rgba(22,23,29,0.06), 0 8px 24px rgba(22,23,29,0.10);
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%,100% { transform:translateY(0); }
+  50% { transform:translateY(-8px); }
+}
+.setup-title {
+  font-size:24px; font-weight:800;
+  margin-bottom:6px; letter-spacing:-0.4px;
+}
+.setup-subtitle {
+  font-size:14px; color:var(--text2);
+  margin-bottom:28px;
+}
+
+/* Device Card */
+.device-cards { display:flex; flex-direction:column; gap:10px; }
+.device-card {
+  display:flex; align-items:center; gap:14px;
+  padding:16px; border-radius:14px;
+  background: var(--surface);
+  border:2px solid transparent;
+  cursor:pointer;
+  transition: all 0.25s ease;
+  box-shadow: var(--card-shadow);
+}
+.device-card:active { transform:scale(0.98); }
+.device-card.selected { border-color:var(--text); background:rgba(26,26,46,0.04); }
+.device-icon {
+  width:44px; height:44px; border-radius:12px;
+  background:var(--surface2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px;
+}
+.device-card.selected .device-icon { background:rgba(26,26,46,0.1); }
+.device-info h4 { font-size:15px; font-weight:600; }
+.device-info p { font-size:12px; color:var(--text2); margin-top:1px; }
+.device-check {
+  margin-left:auto;
+  width:22px; height:22px; border-radius:50%;
+  border:2px solid var(--surface3);
+  display:flex; align-items:center; justify-content:center;
+  transition: all 0.2s;
+}
+.device-card.selected .device-check {
+  border-color:var(--text); background:var(--text);
+}
+.device-card.selected .device-check::after {
+  content:'✓'; color:#fff; font-size:12px; font-weight:700;
+}
+
+/* Style Option */
+.style-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.style-option {
+  padding:18px 14px; border-radius:14px;
+  background:var(--surface);
+  border:2px solid transparent;
+  cursor:pointer; text-align:center;
+  box-shadow: var(--card-shadow);
+  transition: all 0.25s ease;
+}
+.style-option:active { transform:scale(0.97); }
+.style-option.selected { border-color:var(--text); background:rgba(26,26,46,0.04); }
+.style-emoji { font-size:32px; margin-bottom:8px; }
+.style-option h4 { font-size:14px; font-weight:600; }
+.style-option p { font-size:11px; color:var(--text2); margin-top:2px; }
+
+/* Skill Chips */
+.skill-chips { display:flex; flex-wrap:wrap; gap:8px; }
+.skill-chip {
+  padding:10px 16px; border-radius:20px;
+  background:var(--surface);
+  border:2px solid transparent;
+  font-size:13px; font-weight:500;
+  cursor:pointer;
+  box-shadow: var(--card-shadow);
+  transition: all 0.25s ease;
+  display:flex; align-items:center; gap:6px;
+}
+.skill-chip:active { transform:scale(0.96); }
+.skill-chip.selected { border-color:var(--text); background:rgba(26,26,46,0.04); color:var(--text); }
+
+/* Setup Step 2: Profile Edit */
+.setup-profile-edit {
+  display:flex; flex-direction:column; align-items:center;
+  gap:20px;
+}
+.setup-profile-avatar-wrap {
+  position:relative; cursor:pointer;
+}
+.setup-profile-avatar-wrap img {
+  width:96px; height:96px; border-radius:50%;
+  object-fit:cover; border:3px solid var(--text);
+  box-shadow:0 0 0 5px rgba(22,23,29,0.06), 0 8px 24px rgba(22,23,29,0.10);
+  transition:transform 0.2s;
+}
+.setup-profile-avatar-wrap:active img { transform:scale(0.95); }
+.setup-profile-avatar-badge {
+  position:absolute; bottom:0; right:0;
+  width:30px; height:30px; border-radius:50%;
+  background:var(--accent); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px;
+  box-shadow:0 2px 8px rgba(79,110,247,0.3);
+  border:2px solid #fff;
+}
+.setup-profile-field {
+  width:100%;
+}
+.setup-profile-field label {
+  display:block; font-size:12px; font-weight:600;
+  color:var(--text2); margin-bottom:6px;
+}
+.setup-profile-field input {
+  width:100%; padding:14px 16px;
+  border-radius:14px; border:2px solid var(--border);
+  background:var(--surface2); font-size:16px;
+  font-family:inherit; color:var(--text); outline:none;
+  transition:border-color 0.2s, background 0.2s;
+  text-align:center; font-weight:600;
+}
+.setup-profile-field input:focus {
+  border-color:var(--accent); background:var(--white);
+}
+
+/* Persona Selection */
+.setup-persona-section {
+  margin-top:20px; width:100%;
+}
+.setup-persona-section label {
+  display:block; font-size:12px; font-weight:600;
+  color:var(--text2); margin-bottom:10px;
+}
+.setup-persona-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:8px;
+}
+.persona-card {
+  display:flex; flex-direction:column; align-items:center;
+  padding:14px 10px 12px; border-radius:14px;
+  background:var(--surface2); border:2px solid transparent;
+  cursor:pointer; transition:all 0.2s;
+  text-align:center; gap:6px;
+}
+.persona-card:active { transform:scale(0.96); }
+.persona-card.selected {
+  border-color:var(--text); background:rgba(22,23,29,0.04);
+  box-shadow:0 2px 12px rgba(22,23,29,0.08);
+}
+.persona-card-emoji {
+  font-size:28px; line-height:1;
+}
+.persona-card-name {
+  font-size:13px; font-weight:700; color:var(--text);
+  letter-spacing:-0.1px;
+}
+.persona-card-desc {
+  font-size:10px; color:var(--text3); line-height:1.3;
+}
+.setup-persona-custom {
+  margin-top:10px; width:100%;
+}
+.setup-persona-custom input {
+  width:100%; padding:12px 14px;
+  border-radius:12px; border:2px solid var(--border);
+  background:var(--surface2); font-size:13px;
+  font-family:inherit; color:var(--text); outline:none;
+  transition:border-color 0.2s, background 0.2s;
+}
+.setup-persona-custom input:focus {
+  border-color:var(--accent); background:var(--white);
+}
+.setup-persona-custom input::placeholder { color:var(--text3); }
+
+/* Setup Finish Animation Overlay */
+.setup-finish-overlay {
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  background:var(--white);
+  z-index:10000;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  max-width:430px; margin:0 auto;
+  opacity:0; pointer-events:none;
+  transition:opacity 0.5s;
+}
+.setup-finish-overlay.show { opacity:1; pointer-events:all; }
+.finish-anim-list {
+  display:flex; flex-direction:column; gap:16px;
+  width:80%; max-width:300px;
+}
+.finish-anim-item {
+  display:flex; align-items:center; gap:14px;
+  padding:14px 18px; border-radius:16px;
+  background:var(--surface2);
+  font-size:14px; font-weight:600; color:var(--text);
+  opacity:0; transform:translateY(20px);
+  transition:all 0.5s ease;
+}
+.finish-anim-item.show { opacity:1; transform:translateY(0); }
+.finish-anim-item .finish-icon {
+  font-size:24px; flex-shrink:0;
+}
+.finish-anim-hint {
+  margin-top:32px; text-align:center;
+  font-size:13px; color:var(--text3);
+  opacity:0; transition:opacity 0.5s;
+  max-width:260px; line-height:1.6;
+}
+.finish-anim-hint.show { opacity:1; }
+.finish-anim-title {
+  font-size:22px; font-weight:800;
+  margin-bottom:24px;
+  opacity:0; transform:translateY(20px);
+  transition:all 0.5s ease;
+  letter-spacing:-0.4px;
+}
+.finish-anim-title.show { opacity:1; transform:translateY(0); }
+
+/* Connect flow in setup */
+.setup-connect-flow {
+  display:flex; flex-direction:column; align-items:center;
+  gap:16px; padding:16px 0;
+}
+.setup-connect-icon {
+  width:80px; height:80px; border-radius:50%;
+  background:linear-gradient(135deg, rgba(59,130,246,0.1), rgba(99,102,241,0.08));
+  display:flex; align-items:center; justify-content:center;
+  font-size:36px;
+  animation:pulse-blue 2s ease-in-out infinite;
+}
+@keyframes pulse-blue {
+  0%,100% { box-shadow:0 0 0 0 rgba(59,130,246,0.2); }
+  50% { box-shadow:0 0 0 16px rgba(59,130,246,0); }
+}
+.setup-connect-status {
+  font-size:14px; color:var(--accent); font-weight:600;
+}
+.setup-connect-steps {
+  width:100%; display:flex; flex-direction:column; gap:10px;
+}
+.setup-connect-step {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 14px; border-radius:12px;
+  background:rgba(59,130,246,0.06);
+  border:1px solid rgba(59,130,246,0.1);
+  font-size:13px; color:#1e3a5f;
+}
+.setup-connect-step-num {
+  width:24px; height:24px; border-radius:50%;
+  background:linear-gradient(135deg, #3b82f6, #2563eb);
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; flex-shrink:0;
+}
+
+.setup-footer {
+  padding:16px 32px calc(20px + var(--safe-bottom));
+}
+.btn-primary {
+  width:100%; padding:16px; border-radius:14px;
+  background:var(--text); color:#fff;
+  border:none; font-size:16px; font-weight:700;
+  cursor:pointer; font-family:inherit;
+  transition: opacity 0.2s, transform 0.15s;
+  box-shadow: 0 4px 16px rgba(22,23,29,0.18);
+  letter-spacing:-0.1px;
+}
+.btn-primary:active { transform:scale(0.98); opacity:0.9; }
+.btn-skip {
+  background:none; border:none; color:var(--text3);
+  font-size:14px; cursor:pointer; margin-top:10px;
+  width:100%; padding:8px; font-family:inherit;
+}
+
+/* ===== HOME PAGE ===== */
+.home-header {
+  padding:52px 20px 12px;
+  display:flex; align-items:center; justify-content:space-between;
+  background:transparent;
+}
+.home-header-left { display:flex; gap:8px; align-items:center; }
+.home-actions { display:flex; gap:8px; }
+.btn-icon {
+  width:36px; height:36px; border-radius:12px;
+  background:var(--white);
+  border:none; color:var(--text2);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition: all 0.25s ease;
+  position:relative;
+  box-shadow:var(--card-shadow);
+}
+.btn-icon:active { background:var(--surface3); transform:scale(0.9); }
+.btn-icon.btn-connect-pc {
+  background:linear-gradient(135deg, #3b82f6, #2563eb);
+  color:#fff;
+  box-shadow:0 2px 12px rgba(37,99,235,0.35), 0 0 0 2px rgba(59,130,246,0.12);
+  border:none;
+  position:relative;
+  overflow:hidden;
+}
+.btn-icon.btn-connect-pc::before {
+  content:'';
+  position:absolute; top:-50%; left:-50%;
+  width:200%; height:200%;
+  background:linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%);
+  animation:shimmer 3s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0% { transform:translateX(-100%) rotate(45deg); }
+  100% { transform:translateX(100%) rotate(45deg); }
+}
+.btn-icon.btn-connect-pc:active { background:linear-gradient(135deg, #2563eb, #1d4ed8); transform:scale(0.9); }
+.btn-icon.btn-connect-pc .badge {
+  background:#34d399; border-color:#fff;
+}
+.btn-icon .badge {
+  position:absolute; top:4px; right:4px;
+  width:7px; height:7px; border-radius:50%;
+  background:#22c55e; border:1.5px solid var(--white);
+}
+
+/* Home Main Area */
+.home-main {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center;
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding-bottom:20px;
+}
+
+/* Hero Avatar Section */
+.home-hero {
+  display:flex; flex-direction:column;
+  align-items:center;
+  padding:20px 20px 0;
+  width:100%;
+}
+.home-avatar-ring {
+  width:88px; height:88px;
+  border-radius:50%;
+  padding:3px;
+  background:linear-gradient(135deg, var(--text), #5a5a7a);
+  margin-bottom:16px;
+  position:relative;
+  box-shadow:0 4px 20px rgba(22,23,29,0.12);
+}
+.home-avatar-ring img {
+  width:100%; height:100%;
+  border-radius:50%;
+  object-fit:cover;
+  border:3px solid var(--bg);
+}
+.home-avatar-status {
+  position:absolute; bottom:2px; right:2px;
+  width:14px; height:14px; border-radius:50%;
+  background:#22c55e;
+  border:3px solid var(--bg);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50% { opacity:0.6; transform:scale(0.85); }
+}
+.home-greeting {
+  text-align:center; margin-bottom:6px;
+}
+.home-greeting h2 {
+  font-size:22px; font-weight:800;
+  letter-spacing:-0.5px;
+  color:var(--text);
+}
+.home-greeting p {
+  font-size:13px; color:var(--text3);
+  margin-top:4px;
+}
+
+/* Hot Words / Task Suggestions */
+.hot-words-section {
+  padding:20px 20px 0;
+  width:100%;
+}
+.hot-words-title {
+  font-size:11px; font-weight:700;
+  color:var(--text3); margin-bottom:10px;
+  text-transform:uppercase;
+  letter-spacing:1.2px;
+}
+.hot-words {
+  display:flex; flex-direction:column; gap:8px;
+}
+.hot-word {
+  display:flex; align-items:center; gap:12px;
+  padding:14px 16px; border-radius:16px;
+  background:var(--white);
+  border:none;
+  font-size:14px; color:var(--text);
+  cursor:pointer;
+  transition:all 0.25s ease;
+  box-shadow:var(--card-shadow);
+  line-height:1.3;
+  text-align:left;
+  width:100%;
+  font-family:inherit;
+}
+.hot-word:active { transform:scale(0.98); background:var(--surface2); }
+.hot-word-icon {
+  width:36px; height:36px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; flex-shrink:0;
+}
+.hot-word-text {
+  flex:1; min-width:0;
+}
+.hot-word-text .hw-title { font-weight:600; font-size:14px; }
+.hot-word-text .hw-desc { font-size:12px; color:var(--text3); margin-top:2px; }
+.hot-word-arrow { color:var(--text3); font-size:16px; }
+
+/* Home Bottom Input */
+.home-input-dock {
+  width:100%;
+  padding:12px 20px 0;
+  margin-top:auto;
+}
+.home-input-card {
+  background:var(--white);
+  border-radius:24px;
+  padding:4px 4px 4px 8px;
+  box-shadow:0 2px 20px rgba(0,0,0,0.06);
+  display:flex; align-items:center; gap:4px;
+}
+.home-input-inner {
+  flex:1; display:flex; align-items:center;
+  min-width:0;
+  gap:4px;
+}
+.home-input-inner input {
+  flex:1; min-width:0;
+  background:none; border:none; outline:none;
+  color:var(--text); font-size:14px;
+  font-family:inherit;
+  padding:10px 8px;
+  line-height:1.4;
+}
+.home-input-inner input::placeholder { color:var(--text3); }
+.home-img-btn {
+  width:28px; height:28px; border-radius:8px;
+  background:transparent; border:none;
+  color:var(--text3);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all 0.2s;
+  flex-shrink:0;
+}
+.home-img-btn:active { color:var(--text2); }
+.home-voice-btn {
+  width:36px; height:36px; border-radius:50%;
+  background:var(--surface2); border:none;
+  color:var(--text2);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; flex-shrink:0;
+  transition:all 0.2s;
+}
+.home-voice-btn:active { background:var(--surface3); transform:scale(0.93); }
+.home-send-btn {
+  width:36px; height:36px; border-radius:50%;
+  background:var(--text); border:none;
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; flex-shrink:0;
+  transition:all 0.2s;
+  opacity:0.2;
+}
+.home-send-btn.active { opacity:1; }
+.home-send-btn:active { transform:scale(0.9); }
+
+/* ===== CHAT DETAIL PAGE ===== */
+.chat-header {
+  padding:50px 16px 12px;
+  display:flex; align-items:center; gap:10px;
+  background:rgba(255,255,255,0.92);
+  backdrop-filter:blur(32px) saturate(180%);
+  -webkit-backdrop-filter:blur(32px) saturate(180%);
+  border-bottom:0.5px solid var(--border);
+  z-index:10;
+}
+.btn-back {
+  width:34px; height:34px; border-radius:50%;
+  background:var(--surface2); border:none;
+  color:var(--text); display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+}
+.btn-back:active { background:var(--surface3); }
+.chat-header-avatar {
+  width:32px; height:32px; border-radius:50%;
+  object-fit:cover; border:2px solid var(--text);
+}
+.chat-header-info { flex:1; }
+.chat-header-info h3 { font-size:15px; font-weight:700; letter-spacing:-0.2px; }
+.chat-header-info span { font-size:11px; color:var(--text2); }
+.btn-history {
+  width:34px; height:34px; border-radius:50%;
+  background:var(--surface2); border:none;
+  color:var(--text2);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+}
+.btn-history:active { background:var(--surface3); }
+.btn-new-task {
+  width:34px; height:34px; border-radius:50%;
+  background:var(--surface2); border:none;
+  color:var(--text2);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all 0.2s;
+}
+.btn-new-task:active { background:var(--surface3); }
+
+/* Messages */
+.messages {
+  flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding:20px 16px;
+  display:flex; flex-direction:column; gap:16px;
+  background:var(--bg);
+}
+.msg {
+  max-width:82%; display:flex; gap:10px;
+  animation: msgIn 0.35s ease-out;
+}
+@keyframes msgIn {
+  from { opacity:0; transform:translateY(10px); }
+  to { opacity:1; transform:translateY(0); }
+}
+.msg.bot { align-self:flex-start; }
+.msg.user { align-self:flex-end; flex-direction:row-reverse; }
+.msg-avatar {
+  width:30px; height:30px; border-radius:50%;
+  object-fit:cover; flex-shrink:0; margin-top:2px;
+}
+.msg-name { font-size:12px; color:var(--text2); margin-bottom:4px; font-weight:500; }
+.msg-content { display:flex; flex-direction:column; }
+.msg-bubble {
+  padding:12px 16px;
+  border-radius:18px;
+  font-size:14px; line-height:1.6;
+}
+.msg.bot .msg-bubble {
+  background:var(--white);
+  border-bottom-left-radius:6px;
+  box-shadow:var(--card-shadow);
+  color:var(--text);
+}
+.msg.user .msg-bubble {
+  background:var(--text);
+  border-bottom-right-radius:6px;
+  color:#fff;
+}
+.msg-time-label {
+  text-align:center; font-size:11px;
+  color:var(--text3); padding:4px 0;
+}
+
+/* Typing */
+.typing-indicator { display:flex; gap:4px; padding:4px 0; }
+.typing-indicator span {
+  width:6px; height:6px; border-radius:50%;
+  background:var(--text3);
+  animation: typing 1.4s ease-in-out infinite;
+}
+.typing-indicator span:nth-child(2) { animation-delay:0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay:0.4s; }
+@keyframes typing {
+  0%,60%,100% { transform:translateY(0); opacity:0.4; }
+  30% { transform:translateY(-5px); opacity:1; }
+}
+
+/* Input Area */
+.input-area {
+  padding:10px 16px calc(10px + var(--safe-bottom));
+  background:var(--white);
+  border-top:0.5px solid var(--border);
+  display:flex; flex-direction:column; gap:8px;
+}
+.input-actions {
+  display:flex; gap:6px; padding-left:2px;
+}
+.input-action-btn {
+  width:32px; height:32px; border-radius:50%;
+  background:var(--surface2); border:none;
+  color:var(--text2);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all 0.2s;
+}
+.input-action-btn:active { background:var(--surface3); transform:scale(0.9); }
+.input-action-btn.recording { background:#ef4444; color:#fff; animation:recPulse 1s infinite; }
+@keyframes recPulse {
+  0%,100% { box-shadow:0 0 0 0 rgba(239,68,68,0.4); }
+  50% { box-shadow:0 0 0 8px rgba(239,68,68,0); }
+}
+.input-row {
+  display:flex; align-items:flex-end; gap:8px;
+}
+.input-wrapper {
+  flex:1; display:flex; align-items:flex-end;
+  background:var(--surface2);
+  border-radius:22px;
+  padding:6px 14px;
+  border:1.5px solid transparent;
+  transition:border-color 0.2s;
+}
+.input-wrapper:focus-within { border-color:var(--text3); background:var(--white); }
+.input-wrapper textarea {
+  flex:1; background:none; border:none; outline:none;
+  color:var(--text); font-size:15px;
+  font-family:inherit; resize:none;
+  max-height:100px; line-height:1.4;
+  padding:6px 0;
+}
+.input-wrapper textarea::placeholder { color:var(--text3); }
+.btn-send {
+  width:38px; height:38px; border-radius:50%;
+  background:#16171d; border:none;
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; flex-shrink:0;
+  transition:opacity 0.2s, transform 0.15s;
+  opacity:0.4;
+  box-shadow:0 2px 8px rgba(22,23,29,0.2);
+}
+.btn-send.active { opacity:1; box-shadow:0 2px 12px rgba(22,23,29,0.3); }
+.btn-send:active { transform:scale(0.9); }
+
+/* Remote Desktop Preview */
+.btn-remote-pc {
+  width:34px; height:34px; border-radius:50%;
+  background:linear-gradient(135deg, #3b82f6, #2563eb); border:none;
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all 0.2s;
+  position:relative;
+  box-shadow:0 2px 8px rgba(37,99,235,0.25);
+}
+.btn-remote-pc:active { transform:scale(0.9); background:linear-gradient(135deg, #2563eb, #1d4ed8); }
+.btn-remote-pc .remote-dot {
+  position:absolute; top:3px; right:3px;
+  width:6px; height:6px; border-radius:50%;
+  background:#34d399; border:1.5px solid #fff;
+}
+.remote-desktop-panel {
+  width:100%; background:#0f172a;
+  border-bottom:1px solid rgba(59,130,246,0.2);
+  overflow:hidden;
+  max-height:0;
+  transition:max-height 0.4s ease, padding 0.4s ease;
+  position:relative;
+}
+.remote-desktop-panel.open {
+  max-height:220px;
+  padding:0;
+}
+.remote-desktop-inner {
+  height:200px; width:100%;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  position:relative;
+  background:linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  overflow:hidden;
+}
+.remote-desktop-inner::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; bottom:0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(59,130,246,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(139,92,246,0.06) 0%, transparent 50%);
+}
+.remote-screen-mock {
+  width:85%; max-width:320px; height:140px;
+  background:linear-gradient(135deg, #1e293b, #334155);
+  border-radius:8px;
+  border:1.5px solid rgba(59,130,246,0.25);
+  display:flex; flex-direction:column;
+  overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
+  position:relative;
+  z-index:1;
+}
+.remote-screen-titlebar {
+  height:22px; background:rgba(30,41,59,0.9);
+  display:flex; align-items:center;
+  padding:0 8px; gap:5px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.remote-screen-dot {
+  width:7px; height:7px; border-radius:50%;
+}
+.remote-screen-dot.red { background:#ef4444; }
+.remote-screen-dot.yellow { background:#eab308; }
+.remote-screen-dot.green { background:#22c55e; }
+.remote-screen-titlebar span {
+  font-size:9px; color:rgba(255,255,255,0.4);
+  margin-left:auto; font-family:monospace;
+}
+.remote-screen-body {
+  flex:1; padding:8px 10px;
+  display:flex; flex-direction:column; gap:4px;
+}
+.remote-screen-line {
+  height:6px; border-radius:3px;
+  background:rgba(59,130,246,0.15);
+  animation:screenLine 2s ease-in-out infinite;
+}
+.remote-screen-line:nth-child(1) { width:70%; animation-delay:0s; }
+.remote-screen-line:nth-child(2) { width:85%; animation-delay:0.3s; }
+.remote-screen-line:nth-child(3) { width:55%; animation-delay:0.6s; }
+.remote-screen-line:nth-child(4) { width:75%; animation-delay:0.9s; }
+.remote-screen-line:nth-child(5) { width:60%; animation-delay:1.2s; }
+@keyframes screenLine {
+  0%,100% { opacity:0.4; }
+  50% { opacity:0.8; }
+}
+.remote-screen-cursor {
+  width:8px; height:12px; position:absolute;
+  bottom:40px; right:40%;
+  border-left:2px solid #3b82f6;
+  border-bottom:2px solid #3b82f6;
+  transform:rotate(-45deg);
+  animation:cursorMove 3s ease-in-out infinite;
+  z-index:2;
+}
+@keyframes cursorMove {
+  0%,100% { transform:rotate(-45deg) translate(0,0); }
+  50% { transform:rotate(-45deg) translate(10px,-10px); }
+}
+.remote-label {
+  font-size:10px; color:rgba(255,255,255,0.35);
+  margin-top:8px; font-weight:500;
+  position:relative; z-index:1;
+  display:flex; align-items:center; gap:4px;
+}
+.remote-label .pulse-dot {
+  width:5px; height:5px; border-radius:50%;
+  background:#34d399;
+  animation:pulse 2s ease-in-out infinite;
+}
+.btn-close-remote {
+  position:absolute; top:8px; right:8px;
+  width:26px; height:26px; border-radius:50%;
+  background:rgba(255,255,255,0.1); border:none;
+  color:rgba(255,255,255,0.6);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all 0.2s;
+  z-index:10;
+  font-size:14px;
+  backdrop-filter:blur(8px);
+}
+.btn-close-remote:active { background:rgba(255,255,255,0.2); transform:scale(0.9); }
+
+/* History Sidebar */
+.history-overlay {
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.3);
+  z-index:200; opacity:0; pointer-events:none;
+  transition:opacity 0.3s;
+  max-width:430px; margin:0 auto;
+}
+.history-overlay.open { opacity:1; pointer-events:all; }
+.history-panel {
+  position:absolute; top:0; right:0; bottom:0;
+  width:80%; max-width:320px;
+  background:var(--white);
+  transform:translateX(100%);
+  transition:transform 0.3s ease;
+  display:flex; flex-direction:column;
+  box-shadow:-8px 0 32px rgba(0,0,0,0.1);
+}
+.history-overlay.open .history-panel { transform:translateX(0); }
+.history-header {
+  padding:52px 20px 16px;
+  display:flex; align-items:center; justify-content:space-between;
+  border-bottom:1px solid var(--border);
+}
+.history-header h3 { font-size:17px; font-weight:600; }
+.btn-close-history {
+  width:32px; height:32px; border-radius:50%;
+  background:var(--surface2); border:none;
+  color:var(--text2); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:16px;
+}
+.history-list {
+  flex:1; overflow-y:auto; padding:12px 16px;
+  display:flex; flex-direction:column; gap:6px;
+}
+.history-item {
+  padding:12px 14px;
+  border-radius:12px; cursor:pointer;
+  transition:background 0.2s;
+  display:flex; align-items:center; gap:10px;
+}
+.history-item:active { background:var(--surface2); }
+.history-item.current { background:var(--surface2); }
+.history-item-icon { font-size:16px; }
+.history-item-text { flex:1; min-width:0; }
+.history-item-title { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.history-item-time { font-size:11px; color:var(--text3); }
+
+/* ===== SKILLS PAGE ===== */
+.skills-page {
+  display:flex; flex-direction:column;
+  height:100%;
+}
+.skills-header {
+  padding:52px 20px 16px;
+  text-align:center;
+  background:var(--white);
+}
+.skills-header h1 {
+  font-size:24px; font-weight:800;
+  letter-spacing:-0.5px;
+}
+.skills-header h1 span { font-weight:400; color:var(--text2); }
+.skills-top-bar {
+  display:flex; align-items:center; gap:6px;
+  padding:0 16px 10px;
+  background:var(--white);
+}
+.skills-tabs {
+  display:flex; gap:4px; flex:1;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.skills-tabs::-webkit-scrollbar { display:none; }
+.skill-tab {
+  padding:7px 16px; border-radius:20px;
+  background:transparent; border:none;
+  font-size:13px; color:var(--text2);
+  cursor:pointer; font-family:inherit;
+  transition: all 0.25s ease;
+  white-space:nowrap;
+  font-weight:500;
+}
+.skill-tab.active { background:var(--text); color:#fff; font-weight:600; }
+.skill-tab:active { transform:scale(0.95); }
+.skills-search-row {
+  display:flex; align-items:center; gap:8px;
+  padding:0 16px 12px;
+  background:var(--white);
+  border-bottom:0.5px solid var(--border);
+}
+.skills-search-input {
+  flex:1; display:flex; align-items:center; gap:8px;
+  background:var(--surface2);
+  border-radius:12px;
+  padding:9px 12px;
+}
+.skills-search-input input {
+  flex:1; background:none; border:none; outline:none;
+  color:var(--text); font-size:13px; font-family:inherit;
+}
+.skills-search-input input::placeholder { color:var(--text3); }
+.skills-search-icon {
+  width:36px; height:36px; border-radius:12px;
+  background:var(--surface2); border:none;
+  color:var(--text2);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; flex-shrink:0;
+}
+.btn-my-skills {
+  display:flex; align-items:center; gap:4px;
+  padding:9px 14px; border-radius:12px;
+  background:var(--white); border:1px solid var(--border);
+  font-size:13px; color:var(--text);
+  cursor:pointer; font-family:inherit;
+  font-weight:500; white-space:nowrap;
+  transition:all 0.2s;
+}
+.btn-my-skills:active { background:var(--surface2); }
+.skills-grid {
+  padding:8px 10px;
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:10px;
+  overflow-y:auto; flex:1;
+  padding-bottom:calc(76px + var(--safe-bottom));
+  -webkit-overflow-scrolling:touch;
+}
+.skill-card {
+  background:var(--white);
+  border-radius:14px;
+  padding:14px 12px 12px;
+  box-shadow:var(--card-shadow);
+  cursor:pointer;
+  transition:all 0.25s ease;
+  display:flex; flex-direction:column;
+  border:1px solid rgba(0,0,0,0.03);
+  overflow:hidden;
+  position:relative;
+  min-height:220px;
+}
+.skill-card:active { transform:scale(0.97); }
+.skill-card-header {
+  display:flex; align-items:center; gap:8px;
+  margin-bottom:8px;
+}
+.skill-card-icon {
+  width:36px; height:36px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; flex-shrink:0;
+}
+.skill-card-title {
+  flex:1; min-width:0;
+}
+.skill-card-title h4 {
+  font-size:13px; font-weight:700;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  letter-spacing:-0.1px;
+}
+.skill-card-title p {
+  font-size:11px; color:var(--text3);
+  line-height:1.4; margin-top:2px;
+}
+.skill-card-example {
+  padding:8px 10px;
+  background:var(--surface2);
+  border-radius:8px;
+  font-size:11px; color:var(--text2);
+  line-height:1.5;
+  margin-bottom:10px;
+  min-height:36px;
+}
+.skill-card-footer {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-top:auto;
+  padding-top:4px;
+}
+.skill-card-author {
+  display:flex; align-items:center; gap:4px;
+  font-size:11px; color:var(--text3);
+  min-width:0;
+  overflow:hidden;
+  white-space:nowrap;
+}
+.skill-card-author-dot {
+  width:16px; height:16px; border-radius:50%;
+  background:var(--text);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.skill-card-author-dot svg { width:10px; height:10px; }
+.btn-skill-add {
+  padding:6px 14px; border-radius:20px;
+  background:var(--text); color:#fff;
+  border:none; font-size:12px; font-weight:600;
+  cursor:pointer; font-family:inherit;
+  transition:all 0.2s;
+  white-space:nowrap; flex-shrink:0;
+}
+.btn-skill-add:active { opacity:0.8; transform:scale(0.95); }
+.btn-skill-use {
+  padding:6px 14px; border-radius:20px;
+  background:var(--surface2); color:var(--text);
+  border:none;
+  font-size:12px; font-weight:600;
+  cursor:pointer; font-family:inherit;
+  transition:all 0.2s;
+  white-space:nowrap; flex-shrink:0;
+}
+.btn-skill-use:active { background:var(--surface3); }
+.skill-card-tags { display:flex; gap:4px; margin-bottom:6px; }
+.skill-card-tag {
+  display:inline-flex; align-items:center; gap:3px;
+  padding:3px 8px; border-radius:6px;
+  font-size:10px; font-weight:600;
+  line-height:1.4; letter-spacing:0.02em;
+}
+.skill-card-tag.tag-pc {
+  background:linear-gradient(135deg, #3b82f6, #6366f1);
+  color:#fff;
+  border:none;
+  box-shadow:0 1px 4px rgba(59,130,246,0.3);
+}
+.skill-card-tag.tag-general {
+  background:linear-gradient(135deg, #1e293b, #334155);
+  color:rgba(255,255,255,0.9);
+  border:none;
+  box-shadow:0 1px 4px rgba(30,41,59,0.2);
+}
+.skill-card-tag svg { width:10px; height:10px; flex-shrink:0; }
+
+/* ===== PROFILE PAGE ===== */
+.profile-page {
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding-bottom:calc(76px + var(--safe-bottom));
+  background:var(--bg);
+}
+
+/* Marvis Persona Card */
+.marvis-persona {
+  margin:0 16px 16px;
+  padding:22px 18px;
+  background:var(--white);
+  border-radius:20px;
+  box-shadow:var(--card-shadow);
+  position:relative;
+  overflow:hidden;
+}
+.marvis-persona::before {
+  content:'';
+  position:absolute; top:-30px; right:-30px;
+  width:120px; height:120px; border-radius:50%;
+  background:linear-gradient(135deg, rgba(79,110,247,0.04), rgba(168,85,247,0.03));
+}
+.marvis-persona-header {
+  display:flex; align-items:center; gap:14px;
+  margin-bottom:16px; position:relative;
+}
+.marvis-persona-avatar {
+  width:64px; height:64px; border-radius:50%;
+  object-fit:cover;
+  border:3px solid var(--text);
+  box-shadow:0 0 0 4px rgba(22,23,29,0.06);
+  cursor:pointer;
+}
+.marvis-persona-avatar:active { transform:scale(0.95); }
+.marvis-persona-name h3 { font-size:18px; font-weight:800; letter-spacing:-0.3px; }
+.marvis-persona-name p { font-size:12px; color:var(--text2); margin-top:1px; }
+
+/* Profile Reset Button */
+.profile-top-bar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:52px 20px 12px;
+}
+.profile-top-bar h2 {
+  font-size:18px; font-weight:800; letter-spacing:-0.3px;
+}
+.btn-reset-guide {
+  width:32px; height:32px; border-radius:10px;
+  background:var(--surface2); border:none;
+  color:var(--text2);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all 0.2s;
+}
+.btn-reset-guide:active { background:var(--surface3); transform:scale(0.9); }
+.status-dot {
+  width:6px; height:6px; border-radius:50%;
+  background:#22c55e; display:inline-block;
+}
+.marvis-persona-mood {
+  display:inline-flex; align-items:center; gap:4px;
+  background:rgba(34,197,94,0.08);
+  color:#16a34a; font-size:11px; font-weight:500;
+  padding:3px 10px; border-radius:10px; margin-top:4px;
+}
+.persona-traits {
+  display:flex; gap:6px; flex-wrap:wrap;
+  position:relative;
+}
+.persona-trait {
+  padding:6px 12px; border-radius:10px;
+  background:var(--surface2);
+  font-size:12px; color:var(--text2);
+  display:flex; align-items:center; gap:4px;
+  font-weight:500;
+}
+.marvis-persona-stats {
+  display:flex; gap:16px; margin-top:16px;
+  padding-top:14px;
+  border-top:0.5px solid var(--border);
+}
+.persona-stat { text-align:center; flex:1; }
+.persona-stat-num { font-size:18px; font-weight:800; color:var(--text); letter-spacing:-0.3px; }
+.persona-stat-label { font-size:11px; color:var(--text3); margin-top:1px; font-weight:500; }
+
+/* Recustomize button */
+.btn-recustomize {
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  width:100%; padding:12px;
+  margin-top:16px;
+  border-radius:14px;
+  background:var(--text); color:#fff;
+  border:none; font-size:14px; font-weight:600;
+  cursor:pointer; font-family:inherit;
+  transition:all 0.2s;
+}
+.btn-recustomize:active { opacity:0.8; transform:scale(0.98); }
+
+/* Profile Menu */
+.profile-section {
+  padding:0 16px; margin-top:20px;
+}
+.profile-section-title {
+  font-size:11px; font-weight:700;
+  color:var(--text3); text-transform:uppercase;
+  letter-spacing:1.2px; margin-bottom:10px;
+  padding-left:4px;
+}
+.profile-menu { display:flex; flex-direction:column; gap:3px; }
+.profile-menu-item {
+  display:flex; align-items:center; gap:12px;
+  padding:14px 16px;
+  background:var(--white);
+  border-radius:14px;
+  cursor:pointer;
+  box-shadow:var(--card-shadow);
+  transition:all 0.2s;
+}
+.profile-menu-item:active { transform:scale(0.98); }
+.profile-menu-icon {
+  width:36px; height:36px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:17px;
+}
+.profile-menu-item span { font-size:14px; font-weight:500; flex:1; }
+.profile-menu-item .arrow { color:var(--text3); font-size:16px; flex-shrink:0; margin-left:auto; }
+
+/* Persona Stat Clickable */
+.persona-stat.clickable { cursor:pointer; transition:transform 0.2s; border-radius:10px; padding:4px 0; }
+.persona-stat.clickable:active { transform:scale(0.92); background:var(--surface2); }
+
+/* ===== SKILL DETAIL PANEL ===== */
+.detail-panel-overlay {
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.35);
+  z-index:300; opacity:0; pointer-events:none;
+  transition:opacity 0.3s;
+  max-width:430px; margin:0 auto;
+}
+.detail-panel-overlay.open { opacity:1; pointer-events:all; }
+.detail-panel {
+  position:absolute; bottom:0; left:0; right:0;
+  background:var(--white);
+  border-radius:20px 20px 0 0;
+  max-height:80vh;
+  transform:translateY(100%);
+  transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
+  display:flex; flex-direction:column;
+  overflow:hidden;
+}
+.detail-panel-overlay.open .detail-panel { transform:translateY(0); }
+.detail-panel-handle {
+  width:36px; height:4px; border-radius:2px;
+  background:var(--surface3); margin:10px auto 0;
+}
+.detail-panel-header {
+  padding:16px 20px 12px;
+  display:flex; align-items:center; justify-content:space-between;
+  border-bottom:0.5px solid var(--border);
+}
+.detail-panel-header h3 { font-size:17px; font-weight:700; letter-spacing:-0.2px; }
+.detail-panel-close {
+  width:28px; height:28px; border-radius:50%;
+  background:var(--surface2); border:none;
+  color:var(--text2); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:16px;
+}
+.detail-panel-close:active { background:var(--surface3); }
+.detail-panel-body {
+  flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding:16px 20px calc(20px + var(--safe-bottom));
+}
+
+/* Skill List in Detail */
+.skill-list-section { margin-bottom:16px; }
+.skill-list-section-title {
+  font-size:11px; font-weight:700; color:var(--text3);
+  text-transform:uppercase; letter-spacing:1px;
+  margin-bottom:8px;
+}
+.skill-list-item {
+  display:flex; align-items:center; gap:10px;
+  padding:12px 14px; border-radius:12px;
+  background:var(--surface2); margin-bottom:6px;
+}
+.skill-list-icon {
+  width:32px; height:32px; border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; flex-shrink:0;
+}
+.skill-list-info { flex:1; min-width:0; }
+.skill-list-info h4 { font-size:13px; font-weight:600; }
+.skill-list-info p { font-size:11px; color:var(--text3); margin-top:1px; }
+.skill-list-badge {
+  padding:3px 8px; border-radius:6px;
+  font-size:10px; font-weight:600;
+  flex-shrink:0;
+}
+.skill-list-badge.system { background:var(--text); color:#fff; }
+.skill-list-badge.added { background:rgba(34,197,94,0.1); color:#16a34a; }
+
+/* Calendar in Detail */
+.calendar-container { padding:4px 0; }
+.calendar-month-title {
+  font-size:14px; font-weight:700; text-align:center;
+  margin-bottom:12px; letter-spacing:-0.1px;
+}
+.calendar-weekdays {
+  display:grid; grid-template-columns:repeat(7, 1fr);
+  gap:2px; margin-bottom:6px;
+}
+.calendar-weekday {
+  text-align:center; font-size:10px; font-weight:600;
+  color:var(--text3); padding:4px 0;
+}
+.calendar-days {
+  display:grid; grid-template-columns:repeat(7, 1fr); gap:2px;
+}
+.calendar-day {
+  aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+  border-radius:10px; font-size:12px; font-weight:500; color:var(--text2);
+}
+.calendar-day.empty { visibility:hidden; }
+.calendar-day.today { font-weight:700; color:var(--text); border:1.5px solid var(--text); }
+.calendar-day.active {
+  background:linear-gradient(135deg, #3b82f6, #6366f1);
+  color:#fff; font-weight:700;
+  box-shadow:0 2px 8px rgba(59,130,246,0.25);
+}
+.calendar-day.active.today { border:none; }
+.calendar-streak-info {
+  text-align:center; margin-top:14px;
+  padding:12px; border-radius:12px;
+  background:linear-gradient(135deg, rgba(59,130,246,0.06), rgba(99,102,241,0.04));
+}
+.calendar-streak-info strong { font-size:24px; font-weight:800; color:var(--text); }
+.calendar-streak-info p { font-size:12px; color:var(--text2); margin-top:2px; }
+
+/* Employer Profile in Detail */
+.employer-field {
+  margin-bottom:14px;
+}
+.employer-field label {
+  display:block; font-size:12px; font-weight:600;
+  color:var(--text2); margin-bottom:6px;
+}
+.employer-field input, .employer-field textarea {
+  width:100%; padding:12px 14px;
+  border-radius:12px; border:1.5px solid var(--border);
+  background:var(--surface2); font-size:14px;
+  font-family:inherit; color:var(--text); outline:none;
+  transition:border-color 0.2s, background 0.2s;
+}
+.employer-field input:focus, .employer-field textarea:focus {
+  border-color:var(--accent); background:var(--white);
+}
+.employer-field textarea { resize:none; min-height:60px; }
+.employer-save-btn {
+  width:100%; padding:13px; border-radius:14px;
+  background:var(--text); color:#fff;
+  border:none; font-size:14px; font-weight:600;
+  cursor:pointer; font-family:inherit; margin-top:8px;
+  transition:all 0.2s;
+}
+.employer-save-btn:active { opacity:0.8; transform:scale(0.98); }
+
+/* ===== NIUMA MANAGEMENT ===== */
+.niuma-list { display:flex; flex-direction:column; gap:8px; }
+.niuma-card {
+  display:flex; align-items:center; gap:12px;
+  padding:14px; border-radius:14px;
+  background:var(--surface2);
+  cursor:pointer; transition:all 0.2s;
+}
+.niuma-card:active { transform:scale(0.98); }
+.niuma-card-avatar {
+  width:44px; height:44px; border-radius:50%;
+  object-fit:cover; border:2px solid var(--text);
+  flex-shrink:0;
+}
+.niuma-card-info { flex:1; min-width:0; }
+.niuma-card-info h4 { font-size:14px; font-weight:700; }
+.niuma-card-info p { font-size:11px; color:var(--text3); margin-top:1px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.niuma-card-badge {
+  padding:3px 8px; border-radius:6px;
+  font-size:10px; font-weight:600; flex-shrink:0;
+}
+.niuma-card-badge.system { background:var(--text); color:#fff; }
+.niuma-card-badge.custom { background:rgba(168,85,247,0.1); color:#7c3aed; }
+.niuma-card-actions {
+  display:flex; gap:4px; flex-shrink:0;
+}
+.niuma-action-btn {
+  width:30px; height:30px; border-radius:8px;
+  background:var(--white); border:none;
+  color:var(--text2); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all 0.2s;
+}
+.niuma-action-btn:active { background:var(--surface3); }
+.niuma-action-btn.delete { color:#ef4444; }
+.btn-add-niuma {
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  width:100%; padding:13px; border-radius:14px;
+  background:var(--white); color:var(--accent);
+  border:1.5px dashed var(--accent);
+  font-size:14px; font-weight:600;
+  cursor:pointer; font-family:inherit;
+  margin-top:8px; transition:all 0.2s;
+}
+.btn-add-niuma:active { background:var(--accent-bg); transform:scale(0.98); }
+
+/* ===== OFFICE PAGE ===== */
+.office-page {
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding-bottom:calc(76px + var(--safe-bottom));
+  background:var(--bg);
+  display:flex; flex-direction:column; align-items:center;
+}
+.office-header {
+  padding:52px 20px 0;
+  text-align:center; width:100%;
+  background:linear-gradient(180deg, #f8faff 0%, var(--bg) 100%);
+  padding-bottom:24px;
+}
+.office-header h2 {
+  font-size:20px; font-weight:800;
+  letter-spacing:-0.4px;
+}
+.office-header p {
+  font-size:13px; color:var(--text3); margin-top:4px;
+}
+.office-marvis-section {
+  width:100%; padding:24px 20px 0;
+  display:flex; flex-direction:column; align-items:center;
+}
+.office-marvis-avatar {
+  width:96px; height:96px; border-radius:50%;
+  object-fit:cover;
+  border:3px solid var(--text);
+  box-shadow:0 0 0 5px rgba(22,23,29,0.06), 0 8px 24px rgba(22,23,29,0.10);
+  margin-bottom:12px;
+  cursor:pointer;
+  transition:transform 0.2s;
+}
+.office-marvis-avatar:active { transform:scale(0.95); }
+.office-marvis-name {
+  font-size:18px; font-weight:800; margin-bottom:2px;
+  letter-spacing:-0.3px;
+}
+.office-marvis-status {
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:12px; color:#3b82f6;
+  background:linear-gradient(135deg, rgba(59,130,246,0.10), rgba(99,102,241,0.08));
+  padding:4px 14px; border-radius:20px;
+  margin-bottom:20px;
+  font-weight:600;
+  border:1px solid rgba(59,130,246,0.15);
+  box-shadow:0 1px 4px rgba(59,130,246,0.08);
+}
+.office-marvis-status .dot {
+  width:6px; height:6px; border-radius:50%;
+  background:linear-gradient(135deg, #3b82f6, #6366f1); display:inline-block;
+  box-shadow:0 0 4px rgba(59,130,246,0.4);
+}
+.office-assistants-title {
+  font-size:11px; font-weight:700; color:var(--text3);
+  text-transform:uppercase; letter-spacing:1.2px;
+  margin-bottom:14px; width:100%; padding:0 20px;
+}
+.office-assistants {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:10px; width:100%; padding:0 16px;
+}
+.office-assistant-card {
+  background:var(--white);
+  border-radius:18px;
+  padding:0;
+  box-shadow:var(--card-shadow);
+  cursor:pointer;
+  transition:all 0.25s ease;
+  border:1px solid rgba(0,0,0,0.03);
+  display:flex; flex-direction:column;
+  position:relative;
+  overflow:hidden;
+}
+.office-assistant-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0;
+  height:4px;
+  background:linear-gradient(90deg, var(--desk-color, rgba(59,130,246,0.5)), var(--desk-color2, rgba(99,102,241,0.3)));
+  border-radius:18px 18px 0 0;
+}
+.office-assistant-card:active { transform:scale(0.96); }
+/* Desk area - the workstation top */
+.office-desk-area {
+  background:linear-gradient(180deg, rgba(241,245,249,0.8) 0%, rgba(248,250,252,0.4) 100%);
+  padding:14px 14px 10px;
+  display:flex; flex-direction:column; align-items:center;
+  position:relative;
+  border-bottom:1px dashed rgba(0,0,0,0.06);
+}
+.office-desk-items {
+  position:absolute; top:8px; left:10px;
+  display:flex; gap:3px;
+  font-size:10px; opacity:0.5;
+}
+.office-assistant-avatar {
+  width:52px; height:52px; border-radius:50%;
+  object-fit:cover;
+  border:2.5px solid var(--text);
+  box-shadow:0 0 0 3px rgba(22,23,29,0.06), 0 4px 12px rgba(0,0,0,0.08);
+  margin-bottom:6px;
+  position:relative;
+  z-index:1;
+}
+.office-assistant-status-badge {
+  position:absolute; top:8px; right:10px;
+  display:inline-flex; align-items:center; gap:3px;
+  font-size:9px; font-weight:600;
+  padding:3px 8px; border-radius:8px;
+  z-index:2;
+}
+.office-assistant-status-badge.ready {
+  color:#3b82f6; background:linear-gradient(135deg, rgba(59,130,246,0.10), rgba(99,102,241,0.06));
+  border:1px solid rgba(59,130,246,0.12);
+}
+.office-assistant-status-badge.working {
+  color:#6366f1; background:linear-gradient(135deg, rgba(99,102,241,0.10), rgba(139,92,246,0.06));
+  border:1px solid rgba(99,102,241,0.12);
+}
+/* Info area below the desk */
+.office-assistant-info {
+  padding:10px 14px 12px;
+  display:flex; flex-direction:column; align-items:center;
+}
+.office-assistant-card h4 {
+  font-size:14px; font-weight:700; margin-bottom:2px;
+  letter-spacing:-0.2px; text-align:center;
+}
+.office-assistant-card p {
+  font-size:11px; color:var(--text2); line-height:1.4; text-align:center;
+}
+.office-assistant-tasks {
+  display:inline-flex; align-items:center; gap:3px;
+  font-size:10px; color:var(--accent);
+  background:var(--accent-bg);
+  padding:3px 10px; border-radius:10px;
+  margin-top:6px;
+  font-weight:500;
+}
+.office-assistant-badge {
+  display:none;
+}
+.office-assistant-config {
+  position:absolute; bottom:10px; right:10px;
+  width:28px; height:28px; border-radius:50%;
+  background:var(--surface2); border:none;
+  color:var(--text3);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all 0.2s;
+  z-index:2;
+}
+.office-assistant-config:active { background:var(--surface3); color:var(--text); transform:scale(0.9); }
+.office-custom-badge {
+  position:absolute; top:8px; left:10px;
+  font-size:9px; font-weight:600; color:#fff;
+  background:linear-gradient(135deg, #ec4899, #f472b6);
+  padding:2px 8px; border-radius:8px;
+  z-index:3;
+}
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav {
+  position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+  width:100%; max-width:430px;
+  padding:6px 16px calc(6px + var(--safe-bottom));
+  background:rgba(255,255,255,0.88);
+  backdrop-filter:blur(32px) saturate(180%);
+  -webkit-backdrop-filter:blur(32px) saturate(180%);
+  border-top:0.5px solid rgba(0,0,0,0.06);
+  display:flex; justify-content:space-around;
+  z-index:100;
+}
+.nav-item {
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  padding:4px 16px;
+  background:none; border:none;
+  color:var(--text3); font-size:10px;
+  cursor:pointer; font-family:inherit;
+  transition:all 0.25s ease;
+  font-weight:500;
+  letter-spacing:0.02em;
+}
+.nav-item .nav-icon {
+  width:24px; height:24px;
+  display:flex; align-items:center; justify-content:center;
+  transition:all 0.25s ease;
+}
+.nav-item.active { color:var(--text); font-weight:600; }
+.nav-item.active .nav-icon { transform:scale(1.05); }
+.nav-item:active { opacity:0.7; transform:scale(0.92); }
+.app.in-chat .bottom-nav,
+.app.in-home .bottom-nav { display:none; }
+
+/* Swipe delete */
+.chat-item-wrap { position:relative; overflow:hidden; border-radius:14px; }
+.btn-delete {
+  position:absolute; right:0; top:0; bottom:0;
+  width:68px; background:#ef4444;
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:12px; font-weight:600;
+  transform:translateX(100%);
+  transition:transform 0.25s ease;
+}
+.chat-item-wrap.swiped .btn-delete { transform:translateX(0); }
+.chat-item-wrap.swiped .chat-item { transform:translateX(-68px); }
+.chat-item { transition:transform 0.25s ease; }
+
+/* File preview */
+.file-preview {
+  display:flex; align-items:center; gap:8px;
+  padding:8px 12px; margin:0 16px 8px;
+  background:var(--surface2);
+  border-radius:10px; font-size:13px;
+}
+.file-preview .file-icon { font-size:18px; }
+.file-preview .file-name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.file-preview .file-remove {
+  background:none; border:none; color:var(--text3);
+  cursor:pointer; font-size:16px;
+}
+
+/* Connect Modal */
+.connect-modal-overlay {
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.4);
+  z-index:300; display:flex; align-items:flex-end;
+  justify-content:center;
+  max-width:430px; margin:0 auto;
+  opacity:0; pointer-events:none;
+  transition:opacity 0.3s;
+}
+.connect-modal-overlay.open { opacity:1; pointer-events:all; }
+.connect-modal {
+  width:100%;
+  background:linear-gradient(180deg, #eef4ff 0%, #fff 40%);
+  border-radius:20px 20px 0 0;
+  padding:24px 24px calc(24px + var(--safe-bottom));
+  transform:translateY(100%);
+  transition:transform 0.35s ease;
+}
+.connect-modal-overlay.open .connect-modal { transform:translateY(0); }
+.connect-modal-handle {
+  width:36px; height:4px; border-radius:2px;
+  background:rgba(59,130,246,0.2); margin:0 auto 20px;
+}
+.connect-modal h3 { font-size:18px; font-weight:700; margin-bottom:4px; color:#1e3a5f; }
+.connect-modal p { font-size:13px; color:var(--text2); margin-bottom:20px; }
+.connect-steps { display:flex; flex-direction:column; gap:12px; margin-bottom:24px; }
+.connect-step {
+  display:flex; align-items:center; gap:12px;
+  padding:14px; border-radius:12px;
+  background:rgba(59,130,246,0.06);
+  border:1px solid rgba(59,130,246,0.1);
+}
+.connect-step-num {
+  width:28px; height:28px; border-radius:50%;
+  background:linear-gradient(135deg, #3b82f6, #2563eb);
+  color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:700; flex-shrink:0;
+  box-shadow:0 2px 8px rgba(37,99,235,0.3);
+}
+.connect-step span { font-size:14px; color:#1e3a5f; }
+.connect-modal .btn-primary {
+  background:linear-gradient(135deg, #3b82f6, #2563eb);
+  box-shadow:0 4px 16px rgba(37,99,235,0.3);
+}
+
+/* Voice recording overlay */
+.voice-overlay {
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.5);
+  z-index:250; display:flex; align-items:center; justify-content:center;
+  max-width:430px; margin:0 auto;
+  opacity:0; pointer-events:none; transition:opacity 0.3s;
+}
+.voice-overlay.open { opacity:1; pointer-events:all; }
+.voice-card {
+  background:var(--white); border-radius:24px;
+  padding:32px; text-align:center; width:260px;
+  box-shadow:var(--shadow-lg);
+}
+.voice-wave {
+  width:80px; height:80px; border-radius:50%;
+  background:rgba(239,68,68,0.1);
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 16px;
+  animation:voicePulse 1.5s ease-in-out infinite;
+}
+@keyframes voicePulse {
+  0%,100% { box-shadow:0 0 0 0 rgba(239,68,68,0.2); }
+  50% { box-shadow:0 0 0 20px rgba(239,68,68,0); }
+}
+.voice-wave-inner { font-size:32px; }
+.voice-timer { font-size:24px; font-weight:700; margin-bottom:4px; }
+.voice-hint { font-size:13px; color:var(--text2); margin-bottom:20px; }
+.voice-actions { display:flex; gap:12px; justify-content:center; }
+.voice-btn {
+  padding:10px 24px; border-radius:12px;
+  border:none; font-size:14px; font-weight:600;
+  cursor:pointer; font-family:inherit;
+}
+.voice-btn.cancel { background:var(--surface2); color:var(--text2); }
+.voice-btn.done { background:var(--text); color:#fff; }
+
+/* ===== MARVIS CONFIG MODAL ===== */
+.config-overlay {
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.4);
+  z-index:300; display:flex; align-items:flex-end;
+  justify-content:center;
+  max-width:430px; margin:0 auto;
+  opacity:0; pointer-events:none;
+  transition:opacity 0.3s;
+}
+.config-overlay.open { opacity:1; pointer-events:all; }
+.config-modal {
+  width:100%;
+  background:var(--white);
+  border-radius:20px 20px 0 0;
+  padding:20px 24px calc(24px + var(--safe-bottom));
+  transform:translateY(100%);
+  transition:transform 0.35s ease;
+  max-height:85vh; overflow-y:auto;
+}
+.config-overlay.open .config-modal { transform:translateY(0); }
+.config-modal-handle {
+  width:36px; height:4px; border-radius:2px;
+  background:var(--surface3); margin:0 auto 18px;
+}
+.config-modal h3 { font-size:18px; font-weight:700; margin-bottom:20px; text-align:center; }
+.config-avatar-section {
+  display:flex; flex-direction:column; align-items:center; margin-bottom:24px;
+}
+.config-avatar {
+  width:80px; height:80px; border-radius:50%;
+  object-fit:cover;
+  border:3px solid var(--text);
+  box-shadow:0 0 0 4px rgba(22,23,29,0.06);
+  cursor:pointer; transition:transform 0.2s;
+}
+.config-avatar:active { transform:scale(0.95); }
+.config-avatar-hint {
+  font-size:12px; color:var(--accent); margin-top:8px; font-weight:500;
+}
+.config-field {
+  margin-bottom:16px;
+}
+.config-field label {
+  display:block; font-size:12px; font-weight:600;
+  color:var(--text2); margin-bottom:6px;
+}
+.config-field input, .config-field select {
+  width:100%; padding:12px 14px;
+  border-radius:12px; border:1.5px solid var(--border);
+  background:var(--surface2);
+  font-size:14px; font-family:inherit;
+  color:var(--text);
+  outline:none;
+  transition:border-color 0.2s;
+}
+.config-field input:focus, .config-field select:focus {
+  border-color:var(--accent); background:var(--white);
+}
+.config-persona-options {
+  display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;
+}
+.config-persona-option {
+  padding:8px 16px; border-radius:20px;
+  background:var(--surface2); border:2px solid transparent;
+  font-size:13px; font-weight:500; color:var(--text2);
+  cursor:pointer; transition:all 0.2s; font-family:inherit;
+}
+.config-persona-option.selected {
+  border-color:var(--text); background:rgba(22,23,29,0.04); color:var(--text);
+}
+.config-persona-option:active { transform:scale(0.95); }
+.config-persona-custom {
+  width:100%; padding:10px 14px; border-radius:12px;
+  border:1.5px solid var(--border); background:var(--surface2);
+  font-size:13px; color:var(--text); font-family:inherit;
+  outline:none; transition:border-color 0.2s;
+}
+.config-persona-custom:focus { border-color:var(--accent); background:var(--white); }
+.config-persona-custom::placeholder { color:var(--text3); }
+.config-save-btn {
+  width:100%; padding:14px; border-radius:14px;
+  background:var(--text); color:#fff;
+  border:none; font-size:15px; font-weight:700;
+  cursor:pointer; font-family:inherit;
+  margin-top:8px;
+  transition:all 0.2s;
+}
+.config-save-btn:active { opacity:0.8; transform:scale(0.98); }
+.btn-config-marvis {
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  width:calc(100% - 32px); margin:20px 16px calc(20px + var(--safe-bottom));
+  padding:14px; border-radius:14px;
+  background:var(--white); color:var(--text);
+  border:1.5px solid var(--border);
+  font-size:14px; font-weight:600;
+  cursor:pointer; font-family:inherit;
+  box-shadow:var(--card-shadow);
+  transition:all 0.2s;
+}
+.btn-config-marvis:active { background:var(--surface2); transform:scale(0.98); }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+
+<!-- ===== SETUP WIZARD ===== -->
+<div class="setup-overlay" id="setupOverlay">
+  <div class="setup-progress" id="setupProgress">
+    <div class="setup-progress-dot active"></div>
+    <div class="setup-progress-dot"></div>
+    <div class="setup-progress-dot"></div>
+  </div>
+  <div class="setup-content">
+    <!-- Step 1: Connect Computer -->
+    <div class="setup-step active" id="step1">
+      <div class="setup-avatar-area">
+        <img class="setup-avatar" src="avatar.jpg" alt="Marvis">
+      </div>
+      <div class="setup-title">连接你的电脑</div>
+      <div class="setup-subtitle">将 Marvis 与你的桌面端连接，解锁全部能力</div>
+      <div class="device-cards">
+        <div class="device-card" onclick="selectDeviceAndConnect(this, 'mac')">
+          <div class="device-icon" style="background:linear-gradient(135deg, rgba(59,130,246,0.12), rgba(99,102,241,0.08))">💻</div>
+          <div class="device-info">
+            <h4>Mac 桌面版</h4>
+            <p>通过局域网自动发现并连接</p>
+          </div>
+          <div class="device-check"></div>
+        </div>
+        <div class="device-card" onclick="selectDeviceAndConnect(this, 'win')">
+          <div class="device-icon" style="background:linear-gradient(135deg, rgba(59,130,246,0.12), rgba(99,102,241,0.08))">🖥️</div>
+          <div class="device-info">
+            <h4>Windows 桌面版</h4>
+            <p>扫码配对快速连接</p>
+          </div>
+          <div class="device-check"></div>
+        </div>
+      </div>
+      <!-- Connect flow appears after selection -->
+      <div class="setup-connect-flow" id="setupConnectFlow" style="display:none">
+        <div class="setup-connect-icon">🔗</div>
+        <div class="setup-connect-status" id="setupConnectStatus">正在搜索设备...</div>
+        <div class="setup-connect-steps">
+          <div class="setup-connect-step">
+            <div class="setup-connect-step-num">1</div>
+            <span>确保电脑端 Marvis 已启动</span>
+          </div>
+          <div class="setup-connect-step">
+            <div class="setup-connect-step-num">2</div>
+            <span>保持手机与电脑在同一网络</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Step 2: Profile (Avatar + Name + Persona) -->
+    <div class="setup-step" id="step2">
+      <div class="setup-avatar-area" style="margin-bottom:12px;">
+        <img class="setup-avatar" src="avatar.jpg" alt="Marvis" style="animation:none;width:72px;height:72px;">
+      </div>
+      <div class="setup-title">打造你的专属牛马</div>
+      <div class="setup-subtitle">起个名字，选个人设，让 Marvis 更懂你</div>
+      <div class="setup-profile-edit">
+        <div class="setup-profile-avatar-wrap" onclick="document.getElementById('setupAvatarInput').click()">
+          <img id="setupProfileAvatar" src="avatar.jpg" alt="头像">
+          <div class="setup-profile-avatar-badge">📷</div>
+        </div>
+        <input type="file" id="setupAvatarInput" accept="image/*" style="display:none" onchange="handleSetupAvatar(this)">
+        <div class="setup-profile-field">
+          <label>牛马名字</label>
+          <input type="text" id="setupNameInput" placeholder="给你的牛马起个名字" value="Marvis">
+        </div>
+        <div class="setup-persona-section">
+          <label>选择人设</label>
+          <div class="setup-persona-grid" id="setupPersonaGrid">
+            <div class="persona-card selected" onclick="selectPersona(this)" data-persona="效率狂魔">
+              <div class="persona-card-emoji">⚡</div>
+              <div class="persona-card-name">效率狂魔</div>
+              <div class="persona-card-desc">专注高效，使命必达</div>
+            </div>
+            <div class="persona-card" onclick="selectPersona(this)" data-persona="暖心管家">
+              <div class="persona-card-emoji">🤗</div>
+              <div class="persona-card-name">暖心管家</div>
+              <div class="persona-card-desc">温柔体贴，无微不至</div>
+            </div>
+            <div class="persona-card" onclick="selectPersona(this)" data-persona="技术极客">
+              <div class="persona-card-emoji">🤖</div>
+              <div class="persona-card-name">技术极客</div>
+              <div class="persona-card-desc">代码至上，逻辑严谨</div>
+            </div>
+            <div class="persona-card" onclick="selectPersona(this)" data-persona="创意达人">
+              <div class="persona-card-emoji">🎨</div>
+              <div class="persona-card-name">创意达人</div>
+              <div class="persona-card-desc">脑洞大开，灵感不断</div>
+            </div>
+          </div>
+          <div class="setup-persona-custom">
+            <input type="text" id="setupPersonaInput" placeholder="或者自定义人设，如：毒舌损友、养生大师..." oninput="onPersonaInput(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Step 3: Preferences -->
+    <div class="setup-step" id="step3">
+      <div class="setup-avatar-area" style="margin-bottom:12px; margin-top:8px;">
+        <img class="setup-avatar" src="avatar.jpg" alt="Marvis" style="width:72px;height:72px;">
+      </div>
+      <div class="setup-title">选择你的喜好</div>
+      <div class="setup-subtitle">告诉我你的兴趣，我将为你精准打工 🔥</div>
+      <div class="skill-chips" id="setupPreferenceChips">
+        <div class="skill-chip" onclick="toggleChip(this)" data-pref="外卖美食">🍜 外卖美食</div>
+        <div class="skill-chip" onclick="toggleChip(this)" data-pref="游戏娱乐">🎮 游戏娱乐</div>
+        <div class="skill-chip" onclick="toggleChip(this)" data-pref="办公学习">💼 办公学习</div>
+        <div class="skill-chip" onclick="toggleChip(this)" data-pref="出行导航">🚗 出行导航</div>
+        <div class="skill-chip" onclick="toggleChip(this)" data-pref="购物比价">🛒 购物比价</div>
+        <div class="skill-chip" onclick="toggleChip(this)" data-pref="健康运动">🏃 健康运动</div>
+        <div class="skill-chip" onclick="toggleChip(this)" data-pref="影音追剧">🎬 影音追剧</div>
+        <div class="skill-chip" onclick="toggleChip(this)" data-pref="社交聊天">💬 社交聊天</div>
+        <div class="skill-chip" onclick="toggleChip(this)" data-pref="理财记账">💰 理财记账</div>
+        <div class="skill-chip" onclick="toggleChip(this)" data-pref="创意设计">🎨 创意设计</div>
+      </div>
+    </div>
+  </div>
+  <div class="setup-footer">
+    <button class="btn-primary" id="setupNext" onclick="nextSetupStep()">下一步</button>
+    <button class="btn-skip" onclick="skipSetup()">稍后设置</button>
+  </div>
+</div>
+
+<!-- ===== HOME PAGE ===== -->
+<div class="page" id="page-home" style="display:none">
+  <div class="home-header">
+    <div class="home-header-left">
+      <button class="btn-icon" onclick="goBackFromHome()" title="返回">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="btn-icon" onclick="toggleHistory()" title="历史记录">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </button>
+    </div>
+    <button class="btn-icon btn-connect-pc" onclick="openConnectModal()" title="连接电脑">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <div class="badge"></div>
+    </button>
+  </div>
+
+  <div class="home-main">
+    <div class="home-hero">
+      <div class="home-avatar-ring">
+        <img src="avatar.jpg" alt="Marvis">
+        <div class="home-avatar-status"></div>
+      </div>
+      <div class="home-greeting">
+        <h2>Hi, 我是 Marvis</h2>
+        <p>你的智能伙伴，随时听候差遣</p>
+      </div>
+    </div>
+
+    <div class="hot-words-section">
+      <div class="hot-words-title">试试问我</div>
+      <div class="hot-words" id="hotWords"></div>
+    </div>
+
+    <div class="home-input-dock">
+      <div class="home-input-card">
+        <div class="home-input-inner">
+          <button class="home-img-btn" onclick="triggerHomeImage()" title="图片">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </button>
+          <input id="homeInput" type="text" placeholder="说点什么..." oninput="toggleHomeSend()">
+        </div>
+        <button class="home-voice-btn" onclick="toggleVoice()" title="语音">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+        <button class="home-send-btn" id="homeSendBtn" onclick="homeStartChat()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <input type="file" id="homeFileInput" style="display:none" onchange="handleHomeFile(this)">
+  <input type="file" id="homeImageInput" accept="image/*" style="display:none" onchange="handleHomeFile(this)">
+</div>
+
+<!-- ===== CHAT DETAIL PAGE ===== -->
+<div class="page" id="page-chat">
+  <div class="chat-header">
+    <button class="btn-back" onclick="goBack()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <img class="chat-header-avatar" src="avatar.jpg" alt="Marvis">
+    <button class="btn-remote-pc" onclick="toggleRemoteDesktop()" title="电脑远控">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <span class="remote-dot"></span>
+    </button>
+    <div class="chat-header-info">
+      <h3>Marvis</h3>
+      <span id="chatStatus">在线</span>
+    </div>
+    <button class="btn-new-task" onclick="newTaskFromChat()" title="新建任务">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <button class="btn-history" onclick="toggleHistory()" title="历史记录">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+  <!-- Remote Desktop Panel -->
+  <div class="remote-desktop-panel" id="remoteDesktopPanel">
+    <div class="remote-desktop-inner">
+      <button class="btn-close-remote" onclick="toggleRemoteDesktop()">✕</button>
+      <div class="remote-screen-mock">
+        <div class="remote-screen-titlebar">
+          <span class="remote-screen-dot red"></span>
+          <span class="remote-screen-dot yellow"></span>
+          <span class="remote-screen-dot green"></span>
+          <span>Marvis Desktop</span>
+        </div>
+        <div class="remote-screen-body">
+          <div class="remote-screen-line"></div>
+          <div class="remote-screen-line"></div>
+          <div class="remote-screen-line"></div>
+          <div class="remote-screen-line"></div>
+          <div class="remote-screen-line"></div>
+        </div>
+      </div>
+      <div class="remote-screen-cursor"></div>
+      <div class="remote-label"><span class="pulse-dot"></span> 已连接 · Mac Desktop</div>
+    </div>
+  </div>
+  <div class="messages" id="messages"></div>
+  <div id="filePreview"></div>
+  <div class="input-area">
+    <div class="input-actions">
+      <button class="input-action-btn" onclick="triggerFileUpload()" title="上传文件">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+      </button>
+      <button class="input-action-btn" onclick="triggerImageUpload()" title="上传图片">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </button>
+      <button class="input-action-btn" id="voiceBtn" onclick="toggleVoice()" title="语音输入">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      </button>
+    </div>
+    <div class="input-row">
+      <div class="input-wrapper">
+        <textarea id="msgInput" rows="1" placeholder="跟 Marvis 说点什么..." oninput="autoResize(this);toggleSend()"></textarea>
+      </div>
+      <button class="btn-send" id="btnSend" onclick="sendMessage()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+  <input type="file" id="fileInput" style="display:none" onchange="handleFileSelect(this)">
+  <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleFileSelect(this)">
+</div>
+
+<!-- History Sidebar -->
+<div class="history-overlay" id="historyOverlay" onclick="closeHistoryOutside(event)">
+  <div class="history-panel">
+    <div class="history-header">
+      <h3>历史记录</h3>
+      <button class="btn-close-history" onclick="toggleHistory()">✕</button>
+    </div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+</div>
+
+<!-- ===== OFFICE PAGE (牛马办公室) ===== -->
+<div class="page" id="page-office">
+  <div class="office-page">
+    <div class="office-header">
+      <h2>牛马办公室</h2>
+      <p>马威斯和他的小牛马们，随时为你效劳</p>
+    </div>
+    <div class="office-marvis-section">
+      <img class="office-marvis-avatar" src="avatar.jpg" alt="Marvis" onclick="document.getElementById('avatarUpload').click()" title="点击更换头像">
+      <input type="file" id="avatarUpload" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)">
+      <div class="office-marvis-name" id="officeMarvisName">马威斯 Marvis</div>
+      <div class="office-marvis-status">
+        <span class="dot"></span>
+        已连接电脑 · 在线中
+      </div>
+      <button class="btn-primary" style="width:auto;padding:12px 32px;border-radius:24px;font-size:14px;margin-bottom:8px;" onclick="enterHome();document.getElementById('page-home').style.display='';">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;margin-right:6px;"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>开始干活
+      </button>
+    </div>
+    <div class="office-assistants-title">旗下牛马</div>
+    <div class="office-assistants" id="officeAssistants"></div>
+  </div>
+</div>
+
+<!-- ===== SKILLS PAGE ===== -->
+<div class="page" id="page-skills">
+  <div class="skills-page">
+    <div class="skills-header" style="padding-bottom:8px;">
+    </div>
+    <div class="skills-top-bar">
+      <div class="skills-tabs">
+        <button class="skill-tab active" onclick="filterSkillType(this,'all')">全部</button>
+        <button class="skill-tab" onclick="filterSkillType(this,'office')">办公学习</button>
+        <button class="skill-tab" onclick="filterSkillType(this,'desktop')">电脑设置</button>
+        <button class="skill-tab" onclick="filterSkillType(this,'life')">生活日常</button>
+        <button class="skill-tab" onclick="filterSkillType(this,'fun')">游戏娱乐</button>
+      </div>
+    </div>
+    <div class="skills-search-row">
+      <div class="skills-search-input">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="搜索牛马技能" oninput="filterSkills(this.value)">
+      </div>
+    </div>
+    <div class="skills-grid" id="skillsGrid"></div>
+  </div>
+</div>
+
+<!-- ===== PROFILE PAGE ===== -->
+<div class="page" id="page-profile">
+  <div class="profile-page">
+    <div class="profile-top-bar">
+      <h2>我的牛马</h2>
+      <button class="btn-reset-guide" onclick="recustomizeMarvis()" title="重新设置">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+      </button>
+    </div>
+
+    <div class="marvis-persona">
+      <div class="marvis-persona-header">
+        <img class="marvis-persona-avatar" src="avatar.jpg" alt="Marvis" onclick="document.getElementById('avatarUpload').click()" title="点击更换头像">
+        <div class="marvis-persona-name">
+          <h3>Marvis</h3>
+          <p>你的专属智能伙伴</p>
+          <div class="marvis-persona-mood">
+            <div class="status-dot"></div>
+            心情大好，精力充沛！
+          </div>
+        </div>
+      </div>
+      <div class="persona-traits" id="personaTraits">
+        <span class="persona-trait">😊 温暖友好</span>
+        <span class="persona-trait">💡 充满创意</span>
+        <span class="persona-trait">⚡ 反应迅速</span>
+        <span class="persona-trait">🎯 专注高效</span>
+      </div>
+      <div class="marvis-persona-stats">
+        <div class="persona-stat clickable" onclick="openSkillDetail()">
+          <div class="persona-stat-num" id="statSkillCount">12</div>
+          <div class="persona-stat-label">技能</div>
+        </div>
+        <div class="persona-stat clickable" onclick="openCalendarDetail()">
+          <div class="persona-stat-num" id="statStreak">3</div>
+          <div class="persona-stat-label">天连续上班</div>
+        </div>
+        <div class="persona-stat">
+          <div class="persona-stat-num" id="statAgentCount">0</div>
+          <div class="persona-stat-label">雇员人数</div>
+        </div>
+      </div>
+      <button class="btn-recustomize" onclick="openConfigModal('main')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        编辑牛马信息
+      </button>
+    </div>
+
+    <div class="profile-section">
+      <div class="profile-section-title">设置</div>
+      <div class="profile-menu">
+        <div class="profile-menu-item" onclick="openConnectModal()">
+          <div class="profile-menu-icon" style="background:linear-gradient(135deg, rgba(59,130,246,0.1), rgba(99,102,241,0.06))">🖥️</div>
+          <span>设备管理</span>
+          <span class="arrow">›</span>
+        </div>
+        <div class="profile-menu-item" onclick="openNiumaManagement()">
+          <div class="profile-menu-icon" style="background:rgba(168,85,247,0.08)">🐮</div>
+          <span>牛马管理</span>
+          <span class="arrow">›</span>
+        </div>
+        <div class="profile-menu-item" onclick="openEmployerProfile()">
+          <div class="profile-menu-icon" style="background:rgba(245,158,11,0.08)">👤</div>
+          <span>雇主档案</span>
+          <span class="arrow">›</span>
+        </div>
+        <div class="profile-menu-item">
+          <div class="profile-menu-icon" style="background:rgba(100,116,139,0.08)">ℹ️</div>
+          <span>版本信息</span>
+          <span class="arrow" style="font-size:13px">v2.0.0</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-config-marvis" onclick="openConfigModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      配置我的牛马
+    </button>
+  </div>
+</div>
+
+<!-- Detail Panel (shared for skill/calendar/employer/niuma) -->
+<div class="detail-panel-overlay" id="detailPanelOverlay" onclick="closeDetailOutside(event)">
+  <div class="detail-panel">
+    <div class="detail-panel-handle"></div>
+    <div class="detail-panel-header">
+      <h3 id="detailPanelTitle">详情</h3>
+      <button class="detail-panel-close" onclick="closeDetailPanel()">✕</button>
+    </div>
+    <div class="detail-panel-body" id="detailPanelBody"></div>
+  </div>
+</div>
+
+<!-- Connect Modal -->
+<div class="connect-modal-overlay" id="connectModal" onclick="closeConnectOutside(event)">
+  <div class="connect-modal">
+    <div class="connect-modal-handle"></div>
+    <h3>连接桌面版 Marvis</h3>
+    <p>与电脑端配对后，可使用本地文件操控、应用启动等高级技能</p>
+    <div class="connect-steps">
+      <div class="connect-step">
+        <div class="connect-step-num">1</div>
+        <span>确保电脑端 Marvis 已启动</span>
+      </div>
+      <div class="connect-step">
+        <div class="connect-step-num">2</div>
+        <span>保持手机与电脑在同一网络</span>
+      </div>
+      <div class="connect-step">
+        <div class="connect-step-num">3</div>
+        <span>点击下方按钮扫码配对</span>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="closeConnectModal()">扫码连接</button>
+    <button class="btn-skip" onclick="closeConnectModal()">稍后再说</button>
+  </div>
+</div>
+
+<!-- Voice Overlay -->
+<div class="voice-overlay" id="voiceOverlay">
+  <div class="voice-card">
+    <div class="voice-wave"><div class="voice-wave-inner">🎙️</div></div>
+    <div class="voice-timer" id="voiceTimer">0:00</div>
+    <div class="voice-hint">正在录音...</div>
+    <div class="voice-actions">
+      <button class="voice-btn cancel" onclick="cancelVoice()">取消</button>
+      <button class="voice-btn done" onclick="doneVoice()">完成</button>
+    </div>
+  </div>
+</div>
+
+<!-- Marvis Config Modal -->
+<div class="config-overlay" id="configOverlay" onclick="closeConfigOutside(event)">
+  <div class="config-modal">
+    <div class="config-modal-handle"></div>
+    <h3 id="configTitle">配置牛马</h3>
+    <div class="config-avatar-section">
+      <img class="config-avatar" id="configAvatar" src="avatar.jpg" alt="头像" onclick="document.getElementById('configAvatarInput').click()">
+      <div class="config-avatar-hint">点击更换头像</div>
+      <input type="file" id="configAvatarInput" accept="image/*" style="display:none" onchange="handleConfigAvatar(this)">
+    </div>
+    <div class="config-field">
+      <label>名字</label>
+      <input type="text" id="configName" placeholder="给你的牛马起个名字" value="Marvis">
+    </div>
+    <div class="config-field">
+      <label>人设风格</label>
+      <div class="config-persona-options" id="configPersonaOptions">
+        <button class="config-persona-option" onclick="selectConfigPersona(this,'效率狂魔')">效率狂魔</button>
+        <button class="config-persona-option" onclick="selectConfigPersona(this,'暖心管家')">暖心管家</button>
+        <button class="config-persona-option" onclick="selectConfigPersona(this,'技术极客')">技术极客</button>
+        <button class="config-persona-option" onclick="selectConfigPersona(this,'创意达人')">创意达人</button>
+      </div>
+      <input type="text" class="config-persona-custom" id="configPersonaCustom" placeholder="输入自定义人设..." oninput="onConfigPersonaInput(this)">
+    </div>
+    <input type="hidden" id="configTarget" value="main">
+    <button class="config-save-btn" onclick="saveConfig()">保存修改</button>
+  </div>
+</div>
+
+<!-- Setup Finish Animation -->
+<div class="setup-finish-overlay" id="setupFinishOverlay">
+  <div class="finish-anim-title" id="finishTitle">我能帮你做这些</div>
+  <div class="finish-anim-list" id="finishAnimList">
+    <div class="finish-anim-item" data-delay="400">
+      <span class="finish-icon">🍜</span>
+      <span>帮你点外卖，比价推荐最划算的</span>
+    </div>
+    <div class="finish-anim-item" data-delay="800">
+      <span class="finish-icon">🎮</span>
+      <span>陪你打游戏，查攻略组队开黑</span>
+    </div>
+    <div class="finish-anim-item" data-delay="1200">
+      <span class="finish-icon">💼</span>
+      <span>帮你办公，写文档发邮件整理数据</span>
+    </div>
+    <div class="finish-anim-item" data-delay="1600">
+      <span class="finish-icon">🚗</span>
+      <span>规划出行，导航叫车一步到位</span>
+    </div>
+  </div>
+  <div class="finish-anim-hint" id="finishHint">你可以在「我的牛马」里管理你的地址簿、偏好设置等个性化信息</div>
+</div>
+
+<!-- ===== BOTTOM NAV ===== -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="nav-item active" data-page="office">
+    <span class="nav-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 3L2 12h3v8h6v-5h2v5h6v-8h3L12 3z" fill="currentColor"/></svg>
+    </span>
+    办公室
+  </button>
+  <button class="nav-item" data-page="skills">
+    <span class="nav-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2" fill="currentColor"/><rect x="14" y="3" width="7" height="7" rx="2" fill="currentColor"/><rect x="3" y="14" width="7" height="7" rx="2" fill="currentColor"/><rect x="14" y="14" width="7" height="7" rx="2" fill="currentColor"/></svg>
+    </span>
+    技能库
+  </button>
+  <button class="nav-item" data-page="profile">
+    <span class="nav-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4.5" fill="currentColor"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6H4z" fill="currentColor"/></svg>
+    </span>
+    我的牛马
+  </button>
+</nav>
+
+</div>
+
+<script>
+// ===== DATA =====
+let chats = [];
+let currentChatId = null;
+let chatIdCounter = 0;
+let setupStep = 1;
+let pendingFile = null;
+let isRecording = false;
+let voiceInterval = null;
+let voiceSeconds = 0;
+let currentSkillFilter = 'all';
+
+const greetings = [
+  "你好呀！我是 Marvis，很高兴认识你~ 有什么我能帮你的吗？ ✨",
+  "嗨！今天想聊点什么？我已经准备好了 🎯",
+  "你好！Marvis 已就绪，随时听候差遣 💡",
+  "Hey！新的一天，新的对话~ 来聊聊吧 🚀",
+];
+
+const botReplies = [
+  "这是个很好的问题！让我帮你分析一下...\n\n我觉得可以从以下几个方面来看：\n1. 首先了解背景\n2. 然后做出判断\n3. 最后给出建议",
+  "收到！马上安排！\n\n让我先整理一下思路，稍等片刻~",
+  "有趣！这个话题我很感兴趣。\n\n从我的角度来看，关键在于找到核心问题并逐步解决。",
+  "明白了，我来帮你整理一下。\n\n这里有几个要点值得关注...",
+  "好的，让我想想最好的方案。\n\n综合考虑各方面因素，我建议这样做：",
+];
+
+const skills = [
+  { icon:"✍️", name:"提示词大师", desc:"本工具能显著降低提示词写作的门槛并提升其效果", example:'"写一份「用户积分系统」的产品需求文"', bg:"rgba(59,130,246,0.08)", type:"office", users:5672 },
+  { icon:"🌐", name:"实时翻译", desc:"一站式全栈方案，覆盖 FastAPI 后端、SQLAlchemyORM", example:'"写一份「用户积分系统」的产品需求文"', bg:"rgba(14,165,233,0.08)", type:"office", users:4321 },
+  { icon:"📊", name:"数据分析", desc:"一站式全栈方案，覆盖 FastAPI 后端、SQLAlchemyORM", example:'"写一份「用户积分系统」的产品需求文"', bg:"rgba(34,197,94,0.08)", type:"office", users:12000 },
+  { icon:"🎨", name:"创意设计", desc:"一站式全栈方案，覆盖 FastAPI 后端、SQLAlchemyORM", example:'"写一份「用户积分系统」的产品需求文"', bg:"rgba(168,85,247,0.08)", type:"fun", users:5672 },
+  { icon:"💻", name:"代码助手", desc:"编程调试与代码审查，支持多种语言", example:'"写一份「用户积分系统」的产品需求文"', bg:"rgba(239,68,68,0.08)", type:"desktop", users:5672 },
+  { icon:"📚", name:"知识问答", desc:"百科全书级知识库，快速解答", example:'"写一份「用户积分系统」的产品需求文"', bg:"rgba(245,158,11,0.08)", type:"office", users:5672 },
+  { icon:"🧮", name:"数学计算", desc:"复杂公式与逻辑推演，精确求解", example:'"写一份「用户积分系统」的产品需求文"', bg:"rgba(99,102,241,0.08)", type:"office", users:5672 },
+  { icon:"📂", name:"文件管理", desc:"本地文件浏览、搜索与整理", example:'"写一份「用户积分系统」的产品需求文"', bg:"rgba(100,116,139,0.08)", type:"desktop", users:5672 },
+  { icon:"🖥️", name:"应用操控", desc:"远程启动和管理桌面应用", example:'"写一份「用户积分系统」的产品需求文"', bg:"rgba(30,41,59,0.08)", type:"desktop", users:5672 },
+  { icon:"📸", name:"截图识别", desc:"识别屏幕内容并提取信息", example:'"写一份「用户积分系统」的产品需求文"', bg:"rgba(236,72,153,0.08)", type:"life", users:5672 },
+  { icon:"⌨️", name:"快捷操作", desc:"自动化桌面工作流，效率翻倍", example:'"写一份「用户积分系统」的产品需求文"', bg:"rgba(20,184,166,0.08)", type:"desktop", users:5672 },
+  { icon:"🔍", name:"深度搜索", desc:"多维信息检索与汇总", example:'"写一份「用户积分系统」的产品需求文"', bg:"rgba(59,130,246,0.08)", type:"office", users:5672 },
+];
+
+const hotWords = [
+  { icon:"✉️", bg:"rgba(59,130,246,0.1)", title:"帮我写一封工作邮件", desc:"起草专业邮件，高效沟通" },
+  { icon:"📄", bg:"rgba(34,197,94,0.1)", title:"整理桌面文件", desc:"自动分类，告别混乱桌面" },
+  { icon:"📊", bg:"rgba(245,158,11,0.1)", title:"分析这份数据报表", desc:"快速提取关键数据洞察" },
+  { icon:"🌐", bg:"rgba(14,165,233,0.1)", title:"翻译一段英文文档", desc:"精准翻译，保留原文语义" },
+  { icon:"💻", bg:"rgba(168,85,247,0.1)", title:"优化电脑运行速度", desc:"清理缓存，释放系统资源" },
+  { icon:"📅", bg:"rgba(239,68,68,0.1)", title:"安排今日工作计划", desc:"智能规划，提升工作效率" },
+];
+
+const assistants = [
+  { key:'应用助手', icon:'🤖', bg:'rgba(59,130,246,0.1)', desc:'远程启动和管理桌面应用程序', tasks:2, deskColor:'rgba(59,130,246,0.5)', deskColor2:'rgba(99,102,241,0.3)', deskItems:'☕ 📱' },
+  { key:'电脑助手', icon:'🖥️', bg:'rgba(34,197,94,0.1)', desc:'电脑设置、系统优化与故障排查', tasks:0, deskColor:'rgba(34,197,94,0.5)', deskColor2:'rgba(16,185,129,0.3)', deskItems:'🖱️ ⌨️' },
+  { key:'文件助手', icon:'📂', bg:'rgba(245,158,11,0.1)', desc:'本地文件搜索、整理与管理', tasks:1, deskColor:'rgba(245,158,11,0.5)', deskColor2:'rgba(251,191,36,0.3)', deskItems:'📋 ✏️' },
+  { key:'云端助手', icon:'☁️', bg:'rgba(168,85,247,0.1)', desc:'云端同步、备份与在线协作', tasks:0, deskColor:'rgba(168,85,247,0.5)', deskColor2:'rgba(139,92,246,0.3)', deskItems:'🌐 💾' },
+];
+
+function renderOfficeAssistants() {
+  const el = document.getElementById('officeAssistants');
+  const defaultDeskColors = [
+    { deskColor:'rgba(236,72,153,0.5)', deskColor2:'rgba(244,114,182,0.3)', deskItems:'🎨 ✨' },
+    { deskColor:'rgba(14,165,233,0.5)', deskColor2:'rgba(56,189,248,0.3)', deskItems:'📝 🔧' },
+    { deskColor:'rgba(234,179,8,0.5)', deskColor2:'rgba(250,204,21,0.3)', deskItems:'🎯 📊' },
+    { deskColor:'rgba(34,197,94,0.5)', deskColor2:'rgba(74,222,128,0.3)', deskItems:'💡 🚀' },
+  ];
+  // System assistants
+  let cards = assistants.map((a, idx) => {
+    const isWorking = a.tasks > 0;
+    const avatarSrc = a.avatar || 'avatar.jpg';
+    return `
+    <div class="office-assistant-card" style="--desk-color:${a.deskColor};--desk-color2:${a.deskColor2}" onclick="useSkill('${a.key}')">
+      <div class="office-desk-area">
+        <div class="office-desk-items">${a.deskItems}</div>
+        <div class="office-assistant-status-badge ${isWorking ? 'working' : 'ready'}">${isWorking ? '🔄 任务中' : '⚡ 就绪'}</div>
+        <img class="office-assistant-avatar" src="${avatarSrc}" alt="${a.key}" data-assistant-idx="${idx}">
+      </div>
+      <div class="office-assistant-info">
+        <h4>${a.key}</h4>
+        <p>${a.desc}</p>
+        ${isWorking ? `<div class="office-assistant-tasks">📋 ${a.tasks} 个任务进行中</div>` : ''}
+      </div>
+      <button class="office-assistant-config" onclick="event.stopPropagation();openConfigModal(${idx})" title="配置">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+    </div>`;
+  });
+  // Custom niumas
+  customNiumas.forEach((n, i) => {
+    const dc = defaultDeskColors[i % defaultDeskColors.length];
+    const avatarSrc = n.avatar || 'avatar.jpg';
+    return cards.push(`
+    <div class="office-assistant-card" style="--desk-color:${dc.deskColor};--desk-color2:${dc.deskColor2}" onclick="chatWithCustomNiuma(${i})">
+      <div class="office-desk-area">
+        <div class="office-desk-items">${dc.deskItems}</div>
+        <div class="office-assistant-status-badge ready">⚡ 就绪</div>
+        <img class="office-assistant-avatar" src="${avatarSrc}" alt="${n.name}">
+      </div>
+      <div class="office-assistant-info">
+        <h4>${n.name}</h4>
+        <p>${n.skills || '自定义牛马'}</p>
+      </div>
+      <span class="office-custom-badge">自定义</span>
+    </div>`);
+  });
+  el.innerHTML = cards.join('');
+}
+
+function chatWithCustomNiuma(idx) {
+  const n = customNiumas[idx];
+  if (!n) return;
+  switchPage('home');
+  const textarea = document.getElementById('chatInput');
+  if (textarea) textarea.placeholder = '跟 ' + n.name + ' 说点什么...';
+}
+
+// ===== AVATAR UPLOAD =====
+function handleAvatarUpload(input) {
+  if (!input.files.length) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataUrl = e.target.result;
+    // Update all avatar images across the app
+    document.querySelectorAll('.office-marvis-avatar, .marvis-persona-avatar, .setup-avatar, .home-avatar-ring img, .chat-header-avatar, .msg-avatar').forEach(img => {
+      img.src = dataUrl;
+    });
+    // Persist in localStorage
+    localStorage.setItem('marvis_avatar', dataUrl);
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+function loadSavedAvatar() {
+  const saved = localStorage.getItem('marvis_avatar');
+  if (saved) {
+    document.querySelectorAll('.office-marvis-avatar, .marvis-persona-avatar, .setup-avatar, .home-avatar-ring img, .chat-header-avatar, #setupProfileAvatar').forEach(img => {
+      img.src = saved;
+    });
+  }
+}
+
+function loadSavedPreferences() {
+  const saved = localStorage.getItem('marvis_prefs');
+  if (saved) {
+    try {
+      const prefs = JSON.parse(saved);
+      if (prefs.length > 0) {
+        hotWords.length = 0;
+        prefs.forEach(p => {
+          if (prefHotWords[p]) hotWords.push(...prefHotWords[p]);
+        });
+        if (hotWords.length < 3) {
+          hotWords.push(
+            { icon:"📄", bg:"rgba(34,197,94,0.1)", title:"整理桌面文件", desc:"自动分类，告别混乱桌面" },
+            { icon:"🌐", bg:"rgba(14,165,233,0.1)", title:"翻译一段英文文档", desc:"精准翻译，保留原文语义" },
+            { icon:"📅", bg:"rgba(239,68,68,0.1)", title:"安排今日工作计划", desc:"智能规划，提升工作效率" },
+          );
+        }
+      }
+    } catch(e) {}
+  }
+}
+
+// ===== INIT =====
+function init() {
+  loadSavedConfig();
+  loadSavedPreferences();
+  loadSavedPersona();
+  renderSkills();
+  renderHotWords();
+  renderOfficeAssistants();
+  loadSavedAvatar();
+  applyMarvisName();
+  updateProfileStats();
+  setupNav();
+  setupInputEnter();
+  setupHomeEnter();
+  const done = localStorage.getItem('marvis_setup_done');
+  if (done) {
+    document.getElementById('setupOverlay').classList.add('hidden');
+    document.getElementById('page-home').style.display = '';
+    enterHome();
+  }
+}
+
+// ===== HOT WORDS (Task Suggestions) =====
+function renderHotWords() {
+  const el = document.getElementById('hotWords');
+  const shuffled = hotWords.sort(() => 0.5 - Math.random()).slice(0, 3);
+  el.innerHTML = shuffled.map(w => `
+    <button class="hot-word" onclick="useHotWord('${w.title}')">
+      <div class="hot-word-icon" style="background:${w.bg}">${w.icon}</div>
+      <div class="hot-word-text">
+        <div class="hw-title">${w.title}</div>
+        <div class="hw-desc">${w.desc}</div>
+      </div>
+      <span class="hot-word-arrow">›</span>
+    </button>
+  `).join('');
+}
+function useHotWord(text) {
+  document.getElementById('homeInput').value = text;
+  toggleHomeSend();
+  homeStartChat();
+}
+
+// ===== HOME CHAT =====
+function toggleHomeSend() {
+  const btn = document.getElementById('homeSendBtn');
+  const val = document.getElementById('homeInput').value.trim();
+  btn.classList.toggle('active', val.length > 0);
+}
+function setupHomeEnter() {
+  document.getElementById('homeInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); homeStartChat(); }
+  });
+}
+function homeStartChat() {
+  const input = document.getElementById('homeInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  toggleHomeSend();
+  createNewChatWithText(text);
+}
+function triggerHomeFile() { document.getElementById('homeFileInput').click(); }
+function triggerHomeImage() { document.getElementById('homeImageInput').click(); }
+function handleHomeFile(input) {
+  if (!input.files.length) return;
+  const name = input.files[0].name;
+  createNewChatWithText('📎 ' + name);
+  input.value = '';
+}
+
+// ===== SETUP =====
+function nextSetupStep() {
+  const dots = document.querySelectorAll('.setup-progress-dot');
+
+  // Step 2: save profile info + persona
+  if (setupStep === 2) {
+    const nameVal = document.getElementById('setupNameInput').value.trim();
+    if (nameVal) {
+      marvisName = nameVal;
+      localStorage.setItem('marvis_name', nameVal);
+    }
+    savePersona();
+  }
+
+  document.getElementById('step' + setupStep).classList.remove('active');
+  dots[setupStep - 1].classList.remove('active');
+  dots[setupStep - 1].classList.add('done');
+  setupStep++;
+
+  if (setupStep > 3) {
+    // Show finish animation before completing
+    showFinishAnimation();
+    return;
+  }
+
+  document.getElementById('step' + setupStep).classList.add('active');
+  dots[setupStep - 1].classList.add('active');
+
+  if (setupStep === 2) {
+    document.getElementById('setupNext').textContent = '下一步';
+  }
+  if (setupStep === 3) {
+    document.getElementById('setupNext').textContent = '完成设置';
+  }
+}
+
+function skipSetup() { finishSetup(); }
+
+function finishSetup() {
+  localStorage.setItem('marvis_setup_done', '1');
+  document.getElementById('setupOverlay').classList.add('hidden');
+  document.getElementById('setupFinishOverlay').classList.remove('show');
+  document.getElementById('page-home').style.display = '';
+  applyMarvisName();
+  loadSavedAvatar();
+  renderHotWords();
+  enterHome();
+}
+
+// Step 1: select device and show connect flow
+function selectDeviceAndConnect(el, type) {
+  document.querySelectorAll('.device-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  localStorage.setItem('marvis_device', type);
+
+  // Show connect flow
+  const flow = document.getElementById('setupConnectFlow');
+  flow.style.display = '';
+  const status = document.getElementById('setupConnectStatus');
+  status.textContent = '正在搜索设备...';
+
+  // Simulate connection
+  setTimeout(() => { status.textContent = '已发现设备，正在连接...'; }, 1200);
+  setTimeout(() => { status.textContent = '✅ 连接成功！'; }, 2400);
+}
+
+function toggleDevice(el, type) {
+  document.querySelectorAll('.device-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function toggleStyle(el) {
+  document.querySelectorAll('.style-option').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function toggleChip(el) { el.classList.toggle('selected'); }
+
+// Setup avatar handler
+function handleSetupAvatar(input) {
+  if (!input.files.length) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataUrl = e.target.result;
+    document.getElementById('setupProfileAvatar').src = dataUrl;
+    localStorage.setItem('marvis_avatar', dataUrl);
+    document.querySelectorAll('.setup-avatar').forEach(img => img.src = dataUrl);
+  };
+  reader.readAsDataURL(input.files[0]);
+  input.value = '';
+}
+
+// ===== PERSONA SELECTION =====
+let selectedPersona = '效率狂魔';
+
+function selectPersona(el) {
+  document.querySelectorAll('.persona-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPersona = el.dataset.persona;
+  document.getElementById('setupPersonaInput').value = '';
+}
+
+function onPersonaInput(input) {
+  const val = input.value.trim();
+  if (val) {
+    document.querySelectorAll('.persona-card').forEach(c => c.classList.remove('selected'));
+    selectedPersona = val;
+  } else {
+    const first = document.querySelector('.persona-card');
+    if (first) { first.classList.add('selected'); selectedPersona = first.dataset.persona; }
+  }
+}
+
+function savePersona() {
+  if (selectedPersona) {
+    localStorage.setItem('marvis_persona', selectedPersona);
+  }
+}
+
+function loadSavedPersona() {
+  const saved = localStorage.getItem('marvis_persona');
+  if (saved) {
+    selectedPersona = saved;
+    const cards = document.querySelectorAll('.persona-card');
+    let found = false;
+    cards.forEach(c => {
+      c.classList.remove('selected');
+      if (c.dataset.persona === saved) { c.classList.add('selected'); found = true; }
+    });
+    if (!found) {
+      const input = document.getElementById('setupPersonaInput');
+      if (input) input.value = saved;
+    }
+  }
+}
+
+// Preference-based hot words mapping
+const prefHotWords = {
+  '外卖美食': [
+    { icon:"🍜", bg:"rgba(239,68,68,0.1)", title:"帮我点个外卖", desc:"智能比价，推荐附近好店" },
+    { icon:"🍰", bg:"rgba(251,146,60,0.1)", title:"推荐今天吃什么", desc:"根据口味偏好精选推荐" },
+  ],
+  '游戏娱乐': [
+    { icon:"🎮", bg:"rgba(168,85,247,0.1)", title:"查一下游戏攻略", desc:"热门游戏攻略即时获取" },
+    { icon:"🏆", bg:"rgba(245,158,11,0.1)", title:"帮我组队开黑", desc:"匹配队友，畅快游戏" },
+  ],
+  '办公学习': [
+    { icon:"✉️", bg:"rgba(59,130,246,0.1)", title:"帮我写一封工作邮件", desc:"起草专业邮件，高效沟通" },
+    { icon:"📊", bg:"rgba(34,197,94,0.1)", title:"分析这份数据报表", desc:"快速提取关键数据洞察" },
+  ],
+  '出行导航': [
+    { icon:"🚗", bg:"rgba(14,165,233,0.1)", title:"帮我规划出行路线", desc:"智能导航，实时路况" },
+    { icon:"✈️", bg:"rgba(99,102,241,0.1)", title:"查一下机票价格", desc:"多平台比价，找到最优" },
+  ],
+  '购物比价': [
+    { icon:"🛒", bg:"rgba(236,72,153,0.1)", title:"帮我找个好价格", desc:"全网比价，省钱购物" },
+    { icon:"📦", bg:"rgba(245,158,11,0.1)", title:"查一下快递到哪了", desc:"物流追踪，实时更新" },
+  ],
+  '健康运动': [
+    { icon:"🏃", bg:"rgba(34,197,94,0.1)", title:"制定健身计划", desc:"科学运动，健康生活" },
+    { icon:"🥗", bg:"rgba(16,185,129,0.1)", title:"推荐健康食谱", desc:"营养搭配，美味又健康" },
+  ],
+  '影音追剧': [
+    { icon:"🎬", bg:"rgba(239,68,68,0.1)", title:"推荐一部好看的电影", desc:"根据你的口味精选推荐" },
+    { icon:"🎵", bg:"rgba(168,85,247,0.1)", title:"推荐一些好听的歌", desc:"智能歌单，懂你所好" },
+  ],
+  '社交聊天': [
+    { icon:"💬", bg:"rgba(59,130,246,0.1)", title:"帮我想个朋友圈文案", desc:"有趣走心，点赞翻倍" },
+    { icon:"🎁", bg:"rgba(236,72,153,0.1)", title:"推荐一个送朋友的礼物", desc:"贴心推荐，送到心坎" },
+  ],
+  '理财记账': [
+    { icon:"💰", bg:"rgba(245,158,11,0.1)", title:"帮我记一笔账", desc:"智能记账，掌控收支" },
+    { icon:"📈", bg:"rgba(34,197,94,0.1)", title:"分析我的消费习惯", desc:"数据驱动，理性消费" },
+  ],
+  '创意设计': [
+    { icon:"🎨", bg:"rgba(168,85,247,0.1)", title:"帮我设计一张海报", desc:"创意设计，一键生成" },
+    { icon:"✍️", bg:"rgba(59,130,246,0.1)", title:"写一段创意文案", desc:"灵感碰撞，妙笔生花" },
+  ],
+};
+
+function showFinishAnimation() {
+  // Collect selected preferences
+  const selected = [];
+  document.querySelectorAll('#setupPreferenceChips .skill-chip.selected').forEach(c => {
+    selected.push(c.dataset.pref);
+  });
+  localStorage.setItem('marvis_prefs', JSON.stringify(selected));
+
+  // Update hotWords based on preferences
+  if (selected.length > 0) {
+    hotWords.length = 0;
+    selected.forEach(p => {
+      if (prefHotWords[p]) hotWords.push(...prefHotWords[p]);
+    });
+    // Add some defaults if too few
+    if (hotWords.length < 3) {
+      hotWords.push(
+        { icon:"📄", bg:"rgba(34,197,94,0.1)", title:"整理桌面文件", desc:"自动分类，告别混乱桌面" },
+        { icon:"🌐", bg:"rgba(14,165,233,0.1)", title:"翻译一段英文文档", desc:"精准翻译，保留原文语义" },
+        { icon:"📅", bg:"rgba(239,68,68,0.1)", title:"安排今日工作计划", desc:"智能规划，提升工作效率" },
+      );
+    }
+  }
+
+  // Build animation items based on prefs
+  const animItems = [
+    { icon:'🍜', text:'帮你点外卖，比价推荐最划算的' },
+    { icon:'🎮', text:'陪你打游戏，查攻略组队开黑' },
+    { icon:'💼', text:'帮你办公，写文档发邮件整理数据' },
+    { icon:'🚗', text:'规划出行，导航叫车一步到位' },
+  ];
+
+  const overlay = document.getElementById('setupFinishOverlay');
+  const list = document.getElementById('finishAnimList');
+  list.innerHTML = animItems.map((item, i) =>
+    `<div class="finish-anim-item" data-delay="${(i+1)*400}"><span class="finish-icon">${item.icon}</span><span>${item.text}</span></div>`
+  ).join('');
+
+  document.getElementById('setupOverlay').classList.add('hidden');
+  overlay.classList.add('show');
+
+  // Animate title
+  setTimeout(() => document.getElementById('finishTitle').classList.add('show'), 200);
+  // Animate items
+  list.querySelectorAll('.finish-anim-item').forEach(item => {
+    setTimeout(() => item.classList.add('show'), parseInt(item.dataset.delay));
+  });
+  // Animate hint
+  setTimeout(() => document.getElementById('finishHint').classList.add('show'), 2200);
+  // Auto finish after animation
+  setTimeout(() => finishSetup(), 4000);
+}
+
+// ===== NAV =====
+function setupNav() {
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const page = btn.dataset.page;
+      switchPage(page);
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+}
+function switchPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('app').classList.remove('in-chat');
+  document.getElementById('app').classList.remove('in-home');
+  document.getElementById('bottomNav').style.display = '';
+}
+function enterHome() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-home').classList.add('active');
+  document.getElementById('app').classList.remove('in-chat');
+  document.getElementById('app').classList.add('in-home');
+  document.getElementById('bottomNav').style.display = 'none';
+}
+function goBackFromHome() {
+  document.getElementById('app').classList.remove('in-home');
+  document.getElementById('bottomNav').style.display = '';
+  switchPage('office');
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.querySelector('.nav-item[data-page="office"]').classList.add('active');
+}
+
+// ===== CHAT LIST =====
+function createNewChat() {
+  chatIdCounter++;
+  const now = new Date();
+  const t = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  const icons = ['💬','🤖','⚡','🌟','🎯','💡','🔮','✨'];
+  const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+  const chat = {
+    id: chatIdCounter, title: '新对话',
+    icon: icons[Math.floor(Math.random() * icons.length)],
+    lastMsg: greeting, time: t,
+    messages: [{ role:'bot', text:greeting }]
+  };
+  chats.unshift(chat);
+  openChat(chat.id);
+}
+
+function createNewChatWithText(text) {
+  chatIdCounter++;
+  const now = new Date();
+  const t = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  const icons = ['💬','🤖','⚡','🌟','🎯','💡','🔮','✨'];
+  const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+  const chat = {
+    id: chatIdCounter,
+    title: text.slice(0, 20) + (text.length > 20 ? '...' : ''),
+    icon: icons[Math.floor(Math.random() * icons.length)],
+    lastMsg: text, time: t,
+    messages: [{ role:'bot', text:greeting }, { role:'user', text }]
+  };
+  chats.unshift(chat);
+  openChat(chat.id);
+  // Simulate reply
+  setTimeout(() => {
+    const reply = botReplies[Math.floor(Math.random() * botReplies.length)];
+    chat.messages.push({ role:'bot', text:reply });
+    chat.lastMsg = reply.slice(0, 30);
+    if (currentChatId === chat.id) renderMessages();
+  }, 800 + Math.random() * 1200);
+}
+
+function openChat(id) {
+  currentChatId = id;
+  document.getElementById('app').classList.add('in-chat');
+  document.getElementById('bottomNav').style.display = 'none';
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-chat').classList.add('active');
+  renderMessages();
+}
+
+function goBack() {
+  currentChatId = null;
+  document.getElementById('app').classList.remove('in-chat');
+  document.getElementById('bottomNav').style.display = '';
+  switchPage('office');
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.querySelector('.nav-item[data-page="office"]').classList.add('active');
+}
+
+function deleteChat(id) {
+  chats = chats.filter(c => c.id !== id);
+  updateStats();
+}
+
+function newTaskFromChat() {
+  currentChatId = null;
+  document.getElementById('app').classList.remove('in-chat');
+  enterHome();
+}
+
+function toggleRemoteDesktop() {
+  const panel = document.getElementById('remoteDesktopPanel');
+  panel.classList.toggle('open');
+}
+
+// ===== MESSAGES =====
+function renderMessages() {
+  const chat = chats.find(c => c.id === currentChatId);
+  if (!chat) return;
+  const el = document.getElementById('messages');
+  el.innerHTML = chat.messages.map((m, i) => {
+    let html = '';
+    if (i === 0) html += '<div class="msg-time-label">今天</div>';
+    html += `<div class="msg ${m.role==='bot'?'bot':'user'}">
+      ${m.role==='bot'?`<img class="msg-avatar" src="${localStorage.getItem('marvis_avatar')||'avatar.jpg'}" alt="M">`:''}
+      <div class="msg-content">
+        ${m.role==='bot'?`<div class="msg-name">${marvisName}</div>`:''}
+        <div class="msg-bubble">${formatMsg(m.text)}</div>
+      </div>
+    </div>`;
+    return html;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function formatMsg(text) {
+  return text.replace(/\n/g, '<br>');
+}
+
+function sendMessage() {
+  const input = document.getElementById('msgInput');
+  let text = input.value.trim();
+  if (!text && !pendingFile) return;
+
+  const chat = chats.find(c => c.id === currentChatId);
+  if (!chat) return;
+
+  if (pendingFile) {
+    text = (text ? text + '\n' : '') + '📎 ' + pendingFile;
+    clearFile();
+  }
+
+  chat.messages.push({ role:'user', text });
+  chat.lastMsg = text.slice(0, 30);
+  chat.title = text.slice(0, 20) + (text.length > 20 ? '...' : '');
+  const now = new Date();
+  chat.time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+
+  input.value = '';
+  autoResize(input);
+  toggleSend();
+  renderMessages();
+
+  document.getElementById('chatStatus').textContent = '正在输入...';
+  const container = document.getElementById('messages');
+  const typingEl = document.createElement('div');
+  typingEl.className = 'msg bot';
+  typingEl.innerHTML = `<img class="msg-avatar" src="${localStorage.getItem('marvis_avatar')||'avatar.jpg'}" alt="M">
+    <div class="msg-content"><div class="msg-name">${marvisName}</div>
+    <div class="msg-bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div>`;
+  container.appendChild(typingEl);
+  container.scrollTop = container.scrollHeight;
+
+  setTimeout(() => {
+    container.removeChild(typingEl);
+    const reply = botReplies[Math.floor(Math.random() * botReplies.length)];
+    chat.messages.push({ role:'bot', text:reply });
+    chat.lastMsg = reply.slice(0, 30);
+    document.getElementById('chatStatus').textContent = '在线';
+    renderMessages();
+  }, 800 + Math.random() * 1200);
+}
+
+function setupInputEnter() {
+  document.getElementById('msgInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+}
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+function toggleSend() {
+  const btn = document.getElementById('btnSend');
+  const val = document.getElementById('msgInput').value.trim();
+  btn.classList.toggle('active', val.length > 0 || !!pendingFile);
+}
+
+// ===== FILE UPLOAD =====
+function triggerFileUpload() { document.getElementById('fileInput').click(); }
+function triggerImageUpload() { document.getElementById('imageInput').click(); }
+function handleFileSelect(input) {
+  if (!input.files.length) return;
+  pendingFile = input.files[0].name;
+  document.getElementById('filePreview').innerHTML = `
+    <div class="file-preview">
+      <span class="file-icon">📎</span>
+      <span class="file-name">${pendingFile}</span>
+      <button class="file-remove" onclick="clearFile()">✕</button>
+    </div>`;
+  toggleSend();
+  input.value = '';
+}
+function clearFile() {
+  pendingFile = null;
+  document.getElementById('filePreview').innerHTML = '';
+  toggleSend();
+}
+
+// ===== VOICE =====
+function toggleVoice() {
+  if (isRecording) { cancelVoice(); return; }
+  isRecording = true;
+  voiceSeconds = 0;
+  document.getElementById('voiceBtn').classList.add('recording');
+  document.getElementById('voiceOverlay').classList.add('open');
+  document.getElementById('voiceTimer').textContent = '0:00';
+  voiceInterval = setInterval(() => {
+    voiceSeconds++;
+    const m = Math.floor(voiceSeconds / 60);
+    const s = (voiceSeconds % 60).toString().padStart(2, '0');
+    document.getElementById('voiceTimer').textContent = m + ':' + s;
+  }, 1000);
+}
+function cancelVoice() {
+  isRecording = false;
+  clearInterval(voiceInterval);
+  document.getElementById('voiceBtn').classList.remove('recording');
+  document.getElementById('voiceOverlay').classList.remove('open');
+}
+function doneVoice() {
+  cancelVoice();
+  const input = document.getElementById('msgInput');
+  const fakeTexts = ['帮我写一封邮件','今天天气怎么样？','给我讲个笑话吧','帮我翻译一段英文'];
+  input.value = fakeTexts[Math.floor(Math.random() * fakeTexts.length)];
+  autoResize(input);
+  toggleSend();
+}
+
+// ===== HISTORY SIDEBAR =====
+function toggleHistory() {
+  document.getElementById('historyOverlay').classList.toggle('open');
+  renderHistoryList();
+}
+function closeHistoryOutside(e) {
+  if (e.target === document.getElementById('historyOverlay')) toggleHistory();
+}
+function renderHistoryList() {
+  const list = document.getElementById('historyList');
+  if (chats.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text3);font-size:13px">暂无历史记录</div>';
+    return;
+  }
+  list.innerHTML = chats.map(c => `
+    <div class="history-item ${c.id===currentChatId?'current':''}" onclick="switchToChat(${c.id})">
+      <span class="history-item-icon">${c.icon}</span>
+      <div class="history-item-text">
+        <div class="history-item-title">${c.title}</div>
+        <div class="history-item-time">${c.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+function switchToChat(id) {
+  toggleHistory();
+  openChat(id);
+}
+
+// ===== CONNECT MODAL =====
+function openConnectModal() {
+  document.getElementById('connectModal').classList.add('open');
+}
+function closeConnectModal() {
+  document.getElementById('connectModal').classList.remove('open');
+}
+function closeConnectOutside(e) {
+  if (e.target === document.getElementById('connectModal')) closeConnectModal();
+}
+
+// ===== SKILLS =====
+function renderSkills(filter) {
+  const grid = document.getElementById('skillsGrid');
+  let list = skills;
+  if (filter && filter !== 'all') list = skills.filter(s => s.type === filter);
+  grid.innerHTML = list.map((s, i) => {
+    const usersText = s.users >= 10000 ? (s.users/10000).toFixed(1) + '万' : s.users;
+    const isAdded = i < 3;
+    const isPC = s.type === 'desktop';
+    const tagClass = isPC ? 'tag-pc' : 'tag-general';
+    const tagIcon = isPC
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>';
+    const tagLabel = isPC ? '电脑端' : '通用';
+    return `
+    <div class="skill-card" onclick="useSkill('${s.name}')">
+      <div class="skill-card-header">
+        <div class="skill-card-icon" style="background:${s.bg}">${s.icon}</div>
+        <div class="skill-card-title">
+          <h4>${s.name}</h4>
+          <p>${s.desc}</p>
+        </div>
+      </div>
+      <div class="skill-card-tags"><span class="skill-card-tag ${tagClass}">${tagIcon}${tagLabel}</span></div>
+      <div class="skill-card-example">${s.example}</div>
+      <div class="skill-card-footer">
+        <div class="skill-card-author">
+          <span class="skill-card-author-dot"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg></span>
+          Marvis · ${usersText}人添加
+        </div>
+        <button class="${isAdded ? 'btn-skill-use' : 'btn-skill-add'}" onclick="event.stopPropagation();${isAdded ? "useSkill('"+s.name+"')" : ''}">${isAdded ? '使用' : '添加'}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function filterSkills(q) {
+  const grid = document.getElementById('skillsGrid');
+  let list = skills.filter(s => currentSkillFilter==='all' || s.type===currentSkillFilter);
+  if (q) list = list.filter(s => s.name.includes(q) || s.desc.includes(q));
+  grid.innerHTML = list.map((s, i) => {
+    const usersText = s.users >= 10000 ? (s.users/10000).toFixed(1) + '万' : s.users;
+    const isAdded = i < 3;
+    const isPC = s.type === 'desktop';
+    const tagClass = isPC ? 'tag-pc' : 'tag-general';
+    const tagIcon = isPC
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>';
+    const tagLabel = isPC ? '电脑端' : '通用';
+    return `
+    <div class="skill-card" onclick="useSkill('${s.name}')">
+      <div class="skill-card-header">
+        <div class="skill-card-icon" style="background:${s.bg}">${s.icon}</div>
+        <div class="skill-card-title">
+          <h4>${s.name}</h4>
+          <p>${s.desc}</p>
+        </div>
+      </div>
+      <div class="skill-card-tags"><span class="skill-card-tag ${tagClass}">${tagIcon}${tagLabel}</span></div>
+      <div class="skill-card-example">${s.example}</div>
+      <div class="skill-card-footer">
+        <div class="skill-card-author">
+          <span class="skill-card-author-dot"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg></span>
+          Marvis · ${usersText}人添加
+        </div>
+        <button class="${isAdded ? 'btn-skill-use' : 'btn-skill-add'}" onclick="event.stopPropagation();${isAdded ? "useSkill('"+s.name+"')" : ''}">${isAdded ? '使用' : '添加'}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function filterSkillType(btn, type) {
+  currentSkillFilter = type;
+  document.querySelectorAll('.skill-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSkills(type);
+}
+function useSkill(name) {
+  createNewChat();
+  setTimeout(() => {
+    const chat = chats.find(c => c.id === currentChatId);
+    if (chat) {
+      chat.title = name;
+      chat.messages.push({ role:'bot', text:`已切换到「${name}」模式 🎯\n\n请告诉我你需要什么帮助，我会全力以赴！` });
+      chat.lastMsg = `已切换到「${name}」模式`;
+      renderMessages();
+    }
+  }, 100);
+}
+
+// ===== DETAIL PANEL =====
+function openDetailPanel(title, contentHtml) {
+  document.getElementById('detailPanelTitle').textContent = title;
+  document.getElementById('detailPanelBody').innerHTML = contentHtml;
+  document.getElementById('detailPanelOverlay').classList.add('open');
+}
+function closeDetailPanel() {
+  document.getElementById('detailPanelOverlay').classList.remove('open');
+}
+function closeDetailOutside(e) {
+  if (e.target === e.currentTarget) closeDetailPanel();
+}
+
+// ===== SKILL DETAIL =====
+function openSkillDetail() {
+  const addedSkills = skills.slice(0, 3);
+  const systemSkills = skills.slice(3);
+  let html = '<div class="skill-list-section">';
+  html += '<div class="skill-list-section-title">已添加技能 (' + addedSkills.length + ')</div>';
+  addedSkills.forEach(s => {
+    html += `<div class="skill-list-item">
+      <div class="skill-list-icon" style="background:${s.bg}">${s.icon}</div>
+      <div class="skill-list-info"><h4>${s.name}</h4><p>${s.desc}</p></div>
+      <span class="skill-list-badge added">已添加</span>
+    </div>`;
+  });
+  html += '</div><div class="skill-list-section">';
+  html += '<div class="skill-list-section-title">系统默认技能 (' + systemSkills.length + ')</div>';
+  systemSkills.forEach(s => {
+    html += `<div class="skill-list-item">
+      <div class="skill-list-icon" style="background:${s.bg}">${s.icon}</div>
+      <div class="skill-list-info"><h4>${s.name}</h4><p>${s.desc}</p></div>
+      <span class="skill-list-badge system">系统</span>
+    </div>`;
+  });
+  html += '</div>';
+  openDetailPanel('技能详情', html);
+}
+
+// ===== CALENDAR DETAIL =====
+function getChatDays() {
+  const days = JSON.parse(localStorage.getItem('marvis_chat_days') || '[]');
+  const today = new Date().toISOString().slice(0, 10);
+  if (!days.includes(today)) { days.push(today); localStorage.setItem('marvis_chat_days', JSON.stringify(days)); }
+  return days;
+}
+function getStreak() {
+  const days = getChatDays().sort().reverse();
+  let streak = 0;
+  const now = new Date();
+  for (let i = 0; i < 60; i++) {
+    const d = new Date(now); d.setDate(d.getDate() - i);
+    const ds = d.toISOString().slice(0, 10);
+    if (days.includes(ds)) streak++;
+    else break;
+  }
+  return streak;
+}
+function openCalendarDetail() {
+  const chatDays = getChatDays();
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const monthNames = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = now.getDate();
+  const streak = getStreak();
+
+  let html = '<div class="calendar-container">';
+  html += '<div class="calendar-month-title">' + year + '年' + monthNames[month] + '</div>';
+  html += '<div class="calendar-weekdays">';
+  ['日','一','二','三','四','五','六'].forEach(w => { html += '<div class="calendar-weekday">' + w + '</div>'; });
+  html += '</div><div class="calendar-days">';
+  for (let i = 0; i < firstDay; i++) html += '<div class="calendar-day empty"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const isActive = chatDays.includes(ds);
+    const isToday = d === today;
+    let cls = 'calendar-day';
+    if (isActive) cls += ' active';
+    if (isToday) cls += ' today';
+    html += '<div class="' + cls + '">' + d + '</div>';
+  }
+  html += '</div>';
+  html += '<div class="calendar-streak-info"><strong>' + streak + '</strong> 天<p>连续上班打卡 🔥</p></div>';
+  html += '</div>';
+  openDetailPanel('上班日历', html);
+}
+
+// ===== EMPLOYER PROFILE =====
+function openEmployerProfile() {
+  const ep = JSON.parse(localStorage.getItem('marvis_employer') || '{}');
+  let html = '';
+  const fields = [
+    { key:'name', label:'称呼', placeholder:'你希望怎么称呼你', type:'text' },
+    { key:'phone', label:'手机号', placeholder:'联系电话', type:'text' },
+    { key:'homeAddr', label:'家庭地址', placeholder:'常用家庭地址', type:'text' },
+    { key:'workAddr', label:'公司地址', placeholder:'常用公司地址', type:'text' },
+    { key:'favFood', label:'常点外卖地址', placeholder:'外卖收货地址', type:'text' },
+    { key:'notes', label:'备注', placeholder:'其他偏好或备注信息', type:'textarea' }
+  ];
+  fields.forEach(f => {
+    const val = ep[f.key] || '';
+    if (f.type === 'textarea') {
+      html += '<div class="employer-field"><label>' + f.label + '</label><textarea id="ep_' + f.key + '" placeholder="' + f.placeholder + '">' + val + '</textarea></div>';
+    } else {
+      html += '<div class="employer-field"><label>' + f.label + '</label><input type="text" id="ep_' + f.key + '" placeholder="' + f.placeholder + '" value="' + val + '"></div>';
+    }
+  });
+  html += '<button class="employer-save-btn" onclick="saveEmployerProfile()">保存信息</button>';
+  openDetailPanel('雇主档案', html);
+}
+function saveEmployerProfile() {
+  const data = {};
+  ['name','phone','homeAddr','workAddr','favFood','notes'].forEach(k => {
+    const el = document.getElementById('ep_' + k);
+    if (el) data[k] = el.value.trim();
+  });
+  localStorage.setItem('marvis_employer', JSON.stringify(data));
+  closeDetailPanel();
+}
+
+// ===== NIUMA MANAGEMENT =====
+let customNiumas = JSON.parse(localStorage.getItem('marvis_custom_niumas') || '[]');
+
+function openNiumaManagement() {
+  let html = '<div class="skill-list-section">';
+  html += '<div class="skill-list-section-title">系统牛马（不可删除）</div></div>';
+  html += '<div class="niuma-list">';
+  assistants.forEach((a, i) => {
+    html += `<div class="niuma-card" onclick="editNiuma('system',${i})">
+      <img class="niuma-card-avatar" src="${a.avatar || 'avatar.jpg'}" alt="${a.key}">
+      <div class="niuma-card-info"><h4>${a.key}</h4><p>${a.desc}</p></div>
+      <span class="niuma-card-badge system">系统</span>
+    </div>`;
+  });
+  html += '</div>';
+
+  html += '<div class="skill-list-section" style="margin-top:20px">';
+  html += '<div class="skill-list-section-title">自定义牛马 (' + customNiumas.length + ')</div></div>';
+  html += '<div class="niuma-list">';
+  customNiumas.forEach((n, i) => {
+    html += `<div class="niuma-card">
+      <img class="niuma-card-avatar" src="${n.avatar || 'avatar.jpg'}" alt="${n.name}">
+      <div class="niuma-card-info" onclick="editNiuma('custom',${i})"><h4>${n.name}</h4><p>${n.skills || '暂无配置技能'}</p></div>
+      <div class="niuma-card-actions">
+        <button class="niuma-action-btn" onclick="editNiuma('custom',${i})" title="编辑"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="niuma-action-btn delete" onclick="deleteNiuma(${i})" title="删除"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  html += '<button class="btn-add-niuma" onclick="addCustomNiuma()">+ 添加自定义牛马</button>';
+  openDetailPanel('牛马管理', html);
+}
+
+function editNiuma(type, idx) {
+  closeDetailPanel();
+  if (type === 'system') {
+    openConfigModal(idx);
+  } else {
+    const n = customNiumas[idx];
+    if (!n) return;
+    setTimeout(() => {
+      let html = '';
+      html += '<div class="employer-field"><label>头像</label>';
+      html += '<div style="display:flex;align-items:center;gap:12px">';
+      html += '<img id="editNiumaAvatar" src="' + (n.avatar||'avatar.jpg') + '" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--text);cursor:pointer" onclick="document.getElementById(\'editNiumaAvatarInput\').click()">';
+      html += '<input type="file" id="editNiumaAvatarInput" accept="image/*" style="display:none" onchange="handleEditNiumaAvatar(this)">';
+      html += '<span style="font-size:12px;color:var(--text3)">点击更换头像</span></div></div>';
+      html += '<div class="employer-field"><label>名字</label><input type="text" id="editNiumaName" value="' + n.name + '" placeholder="给牛马起个名字"></div>';
+      html += '<div class="employer-field"><label>配置技能</label><input type="text" id="editNiumaSkills" value="' + (n.skills||'') + '" placeholder="如：写代码、做PPT、发邮件"></div>';
+      html += '<button class="employer-save-btn" onclick="saveEditNiuma(' + idx + ')">保存修改</button>';
+      openDetailPanel('编辑牛马 · ' + n.name, html);
+    }, 350);
+  }
+}
+
+let editNiumaTempAvatar = null;
+function handleEditNiumaAvatar(input) {
+  if (!input.files.length) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    editNiumaTempAvatar = e.target.result;
+    document.getElementById('editNiumaAvatar').src = editNiumaTempAvatar;
+  };
+  reader.readAsDataURL(input.files[0]);
+  input.value = '';
+}
+function saveEditNiuma(idx) {
+  const name = document.getElementById('editNiumaName').value.trim();
+  const sk = document.getElementById('editNiumaSkills').value.trim();
+  if (name) customNiumas[idx].name = name;
+  if (sk !== undefined) customNiumas[idx].skills = sk;
+  if (editNiumaTempAvatar) { customNiumas[idx].avatar = editNiumaTempAvatar; editNiumaTempAvatar = null; }
+  localStorage.setItem('marvis_custom_niumas', JSON.stringify(customNiumas));
+  renderOfficeAssistants();
+  updateProfileStats();
+  closeDetailPanel();
+  setTimeout(() => openNiumaManagement(), 350);
+}
+
+function addCustomNiuma() {
+  customNiumas.push({ name:'新牛马 ' + (customNiumas.length+1), avatar:'', skills:'' });
+  localStorage.setItem('marvis_custom_niumas', JSON.stringify(customNiumas));
+  renderOfficeAssistants();
+  updateProfileStats();
+  closeDetailPanel();
+  setTimeout(() => openNiumaManagement(), 350);
+}
+function deleteNiuma(idx) {
+  customNiumas.splice(idx, 1);
+  localStorage.setItem('marvis_custom_niumas', JSON.stringify(customNiumas));
+  renderOfficeAssistants();
+  updateProfileStats();
+  closeDetailPanel();
+  setTimeout(() => openNiumaManagement(), 350);
+}
+
+function updateProfileStats() {
+  const streakEl = document.getElementById('statStreak');
+  if (streakEl) streakEl.textContent = getStreak();
+  const skillEl = document.getElementById('statSkillCount');
+  if (skillEl) skillEl.textContent = skills.length;
+  const agentEl = document.getElementById('statAgentCount');
+  if (agentEl) agentEl.textContent = assistants.length + customNiumas.length;
+}
+
+// ===== RECUSTOMIZE =====
+function recustomizeMarvis() {
+  setupStep = 1;
+  localStorage.removeItem('marvis_setup_done');
+  const overlay = document.getElementById('setupOverlay');
+  // Reset progress dots
+  document.querySelectorAll('.setup-progress-dot').forEach((d, i) => {
+    d.classList.remove('active', 'done');
+    if (i === 0) d.classList.add('active');
+  });
+  // Reset steps
+  document.querySelectorAll('.setup-step').forEach((s, i) => {
+    s.classList.remove('active');
+    if (i === 0) s.classList.add('active');
+  });
+  document.getElementById('setupNext').textContent = '下一步';
+  // Reset connect flow
+  const flow = document.getElementById('setupConnectFlow');
+  if (flow) flow.style.display = 'none';
+  // Reset finish overlay
+  const finishOverlay = document.getElementById('setupFinishOverlay');
+  if (finishOverlay) {
+    finishOverlay.classList.remove('show');
+    document.getElementById('finishTitle').classList.remove('show');
+    document.querySelectorAll('.finish-anim-item').forEach(i => i.classList.remove('show'));
+    document.getElementById('finishHint').classList.remove('show');
+  }
+  // Reset persona selection
+  selectedPersona = '效率狂魔';
+  document.querySelectorAll('.persona-card').forEach((c, i) => {
+    c.classList.toggle('selected', i === 0);
+  });
+  const personaInput = document.getElementById('setupPersonaInput');
+  if (personaInput) personaInput.value = '';
+  overlay.classList.remove('hidden');
+}
+
+// ===== MARVIS CONFIG =====
+let marvisName = localStorage.getItem('marvis_name') || 'Marvis';
+let marvisVoice = localStorage.getItem('marvis_voice') || '温柔女声';
+let marvisPersona = localStorage.getItem('marvis_persona') || '效率狂魔';
+let configTempAvatar = null;
+
+function applyMarvisName() {
+  // Sync name everywhere
+  const officeNameEl = document.getElementById('officeMarvisName');
+  if (officeNameEl) officeNameEl.textContent = marvisName;
+  document.querySelectorAll('.home-greeting h2').forEach(el => {
+    el.textContent = 'Hi, 我是 ' + marvisName;
+  });
+  document.querySelectorAll('.chat-header-info h3').forEach(el => {
+    el.textContent = marvisName;
+  });
+  document.querySelectorAll('.marvis-persona-name h3').forEach(el => {
+    el.textContent = marvisName;
+  });
+  document.querySelectorAll('.msg-name').forEach(el => {
+    el.textContent = marvisName;
+  });
+  // Update chat input placeholder
+  const textarea = document.getElementById('msgInput');
+  if (textarea) textarea.placeholder = '跟 ' + marvisName + ' 说点什么...';
+}
+
+function openConfigModal(target) {
+  // target: 'main' for marvis, or index for assistant
+  const overlay = document.getElementById('configOverlay');
+  const titleEl = document.getElementById('configTitle');
+  const nameInput = document.getElementById('configName');
+  const avatarImg = document.getElementById('configAvatar');
+  const targetInput = document.getElementById('configTarget');
+  configTempAvatar = null;
+
+  if (target !== undefined && target !== 'main') {
+    // Assistant config
+    const a = assistants[target];
+    titleEl.textContent = '配置 ' + a.key;
+    nameInput.value = a.key;
+    avatarImg.src = a.avatar || 'avatar.jpg';
+    targetInput.value = String(target);
+    // Set persona
+    const persona = a.persona || '效率狂魔';
+    document.querySelectorAll('.config-persona-option').forEach(b => {
+      b.classList.toggle('selected', b.textContent === persona);
+    });
+    document.getElementById('configPersonaCustom').value = ['效率狂魔','暖心管家','技术极客','创意达人'].includes(persona) ? '' : persona;
+  } else {
+    // Main marvis config
+    titleEl.textContent = '配置我的牛马';
+    nameInput.value = marvisName;
+    avatarImg.src = localStorage.getItem('marvis_avatar') || 'avatar.jpg';
+    targetInput.value = 'main';
+    const persona = marvisPersona;
+    document.querySelectorAll('.config-persona-option').forEach(b => {
+      b.classList.toggle('selected', b.textContent === persona);
+    });
+    document.getElementById('configPersonaCustom').value = ['效率狂魔','暖心管家','技术极客','创意达人'].includes(persona) ? '' : persona;
+  }
+  overlay.classList.add('open');
+}
+
+function closeConfigModal() {
+  document.getElementById('configOverlay').classList.remove('open');
+}
+function closeConfigOutside(e) {
+  if (e.target === document.getElementById('configOverlay')) closeConfigModal();
+}
+
+function handleConfigAvatar(input) {
+  if (!input.files.length) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    configTempAvatar = e.target.result;
+    document.getElementById('configAvatar').src = configTempAvatar;
+  };
+  reader.readAsDataURL(input.files[0]);
+  input.value = '';
+}
+
+function selectConfigPersona(btn, persona) {
+  document.querySelectorAll('.config-persona-option').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('configPersonaCustom').value = '';
+}
+
+function onConfigPersonaInput(input) {
+  if (input.value.trim()) {
+    document.querySelectorAll('.config-persona-option').forEach(b => b.classList.remove('selected'));
+  } else {
+    const first = document.querySelector('.config-persona-option');
+    if (first) first.classList.add('selected');
+  }
+}
+
+function getConfigPersona() {
+  const customInput = document.getElementById('configPersonaCustom');
+  if (customInput && customInput.value.trim()) return customInput.value.trim();
+  const selected = document.querySelector('.config-persona-option.selected');
+  return selected ? selected.textContent : '效率狂魔';
+}
+
+function saveConfig() {
+  const target = document.getElementById('configTarget').value;
+  const name = document.getElementById('configName').value.trim() || 'Marvis';
+  const persona = getConfigPersona();
+
+  if (target === 'main') {
+    marvisName = name;
+    marvisPersona = persona;
+    localStorage.setItem('marvis_name', name);
+    localStorage.setItem('marvis_persona', persona);
+    selectedPersona = persona;
+    if (configTempAvatar) {
+      localStorage.setItem('marvis_avatar', configTempAvatar);
+      document.querySelectorAll('.office-marvis-avatar, .marvis-persona-avatar, .setup-avatar, .home-avatar-ring img, .chat-header-avatar').forEach(img => {
+        img.src = configTempAvatar;
+      });
+    }
+    applyMarvisName();
+  } else {
+    const idx = parseInt(target);
+    if (!isNaN(idx) && assistants[idx]) {
+      assistants[idx].key = name;
+      assistants[idx].persona = persona;
+      if (configTempAvatar) {
+        assistants[idx].avatar = configTempAvatar;
+        localStorage.setItem('assistant_avatar_' + idx, configTempAvatar);
+      }
+      localStorage.setItem('assistant_name_' + idx, name);
+      localStorage.setItem('assistant_persona_' + idx, persona);
+      renderOfficeAssistants();
+    }
+  }
+  closeConfigModal();
+}
+
+function loadSavedConfig() {
+  // Load main name
+  const savedName = localStorage.getItem('marvis_name');
+  if (savedName) marvisName = savedName;
+  const savedPersona = localStorage.getItem('marvis_persona');
+  if (savedPersona) marvisPersona = savedPersona;
+  applyMarvisName();
+
+  // Load assistant configs
+  assistants.forEach((a, i) => {
+    const aName = localStorage.getItem('assistant_name_' + i);
+    const aAvatar = localStorage.getItem('assistant_avatar_' + i);
+    const aPersona = localStorage.getItem('assistant_persona_' + i);
+    if (aName) a.key = aName;
+    if (aAvatar) a.avatar = aAvatar;
+    if (aPersona) a.persona = aPersona;
+  });
+}
+
+// ===== SWIPE DELETE =====
+let touchStartX = 0;
+function touchStart(e, id) { touchStartX = e.touches[0].clientX; }
+function touchMove(e, id) {
+  const dx = e.touches[0].clientX - touchStartX;
+  const wrap = document.getElementById('wrap-' + id);
+  if (dx < -50) wrap.classList.add('swiped');
+  else wrap.classList.remove('swiped');
+}
+function touchEnd(e, id) {}
+
+// ===== STATS =====
+function updateStats() {
+  updateProfileStats();
+}
+
+// ===== START =====
+init();
+</script>
+</body>
+</html>
