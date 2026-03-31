@@ -387,9 +387,9 @@ body {
 }
 .btn-icon:active { background:var(--surface3); transform:scale(0.9); }
 .btn-icon.btn-connect-pc {
-  background:linear-gradient(135deg, #3b82f6, #2563eb);
+  background:var(--text);
   color:#fff;
-  box-shadow:0 2px 12px rgba(37,99,235,0.35), 0 0 0 2px rgba(59,130,246,0.12);
+  box-shadow:0 2px 12px rgba(22,23,29,0.2);
   border:none;
   position:relative;
   overflow:hidden;
@@ -405,7 +405,7 @@ body {
   0% { transform:translateX(-100%) rotate(45deg); }
   100% { transform:translateX(100%) rotate(45deg); }
 }
-.btn-icon.btn-connect-pc:active { background:linear-gradient(135deg, #2563eb, #1d4ed8); transform:scale(0.9); }
+.btn-icon.btn-connect-pc:active { background:#333; transform:scale(0.9); }
 .btn-icon.btn-connect-pc .badge {
   background:#34d399; border-color:#fff;
 }
@@ -869,6 +869,16 @@ body {
   border-bottom:1px solid var(--border);
 }
 .history-header h3 { font-size:17px; font-weight:600; }
+.history-header-actions {
+  display:flex; align-items:center; gap:6px;
+}
+.history-action-btn {
+  width:34px; height:34px; border-radius:50%;
+  background:var(--surface2); border:none;
+  color:var(--text2); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all 0.2s;
+}
+.history-action-btn:active { background:var(--surface3); color:var(--text); transform:scale(0.9); }
 .btn-close-history {
   width:32px; height:32px; border-radius:50%;
   background:var(--surface2); border:none;
@@ -1395,7 +1405,7 @@ body {
 .office-header {
   padding:52px 20px 0;
   text-align:center; width:100%;
-  background:linear-gradient(180deg, #f8faff 0%, var(--bg) 100%);
+  background:var(--bg);
   padding-bottom:24px;
 }
 .office-header h2 {
@@ -1419,6 +1429,38 @@ body {
   transition:transform 0.2s;
 }
 .office-marvis-avatar:active { transform:scale(0.95); }
+.office-marvis-avatar-wrap {
+  position:relative; display:inline-block;
+}
+.marvis-task-badge {
+  position:absolute; top:2px; right:2px;
+  min-width:20px; height:20px; border-radius:10px;
+  background:linear-gradient(135deg, #ef4444, #f97316);
+  color:#fff; font-size:11px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  padding:0 5px; z-index:3;
+  border:2px solid #fff;
+  box-shadow:0 2px 8px rgba(239,68,68,0.4);
+  animation:badgePulse 2s ease-in-out infinite;
+}
+@keyframes badgePulse {
+  0%,100% { transform:scale(1); }
+  50% { transform:scale(1.1); }
+}
+.marvis-notification {
+  display:flex; align-items:center; gap:8px;
+  background:linear-gradient(135deg, rgba(59,130,246,0.08), rgba(99,102,241,0.06));
+  border:1px solid rgba(59,130,246,0.15);
+  border-radius:12px; padding:8px 14px;
+  margin-bottom:12px; max-width:280px;
+  animation:notifSlideIn 0.4s ease;
+}
+@keyframes notifSlideIn {
+  from { opacity:0; transform:translateY(-8px); }
+  to { opacity:1; transform:translateY(0); }
+}
+.marvis-notification-icon { font-size:16px; flex-shrink:0; }
+.marvis-notification-text { font-size:12px; color:var(--text2); line-height:1.4; }
 .office-marvis-name {
   font-size:18px; font-weight:800; margin-bottom:2px;
   letter-spacing:-0.3px;
@@ -1543,6 +1585,84 @@ body {
   background:linear-gradient(135deg, #ec4899, #f472b6);
   padding:2px 8px; border-radius:8px;
   z-index:3;
+}
+
+/* Office History Section */
+.office-history-section {
+  width:100%; padding:20px 16px 16px;
+}
+.office-history-title {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:12px; padding:0 4px;
+}
+.office-history-title span {
+  font-size:11px; font-weight:700; color:var(--text3);
+  text-transform:uppercase; letter-spacing:1.2px;
+}
+.office-history-more {
+  background:none; border:none; font-size:12px; color:var(--accent);
+  font-weight:500; cursor:pointer; font-family:inherit;
+  padding:4px 8px; border-radius:8px; transition:background 0.2s;
+}
+.office-history-more:active { background:var(--surface2); }
+.office-history-list {
+  display:flex; flex-direction:column; gap:6px;
+}
+.office-history-card {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 14px; border-radius:14px;
+  background:var(--white); border:1px solid rgba(0,0,0,0.03);
+  box-shadow:var(--card-shadow);
+  cursor:pointer; transition:all 0.2s;
+}
+.office-history-card:active { transform:scale(0.98); background:var(--surface2); }
+.office-history-card-icon {
+  width:38px; height:38px; border-radius:12px;
+  background:var(--surface2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; flex-shrink:0;
+}
+.office-history-card-info { flex:1; min-width:0; }
+.office-history-card-title {
+  font-size:13px; font-weight:600; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis;
+}
+.office-history-card-msg {
+  font-size:11px; color:var(--text3); margin-top:2px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.office-history-card-time {
+  font-size:10px; color:var(--text3); flex-shrink:0;
+}
+.office-history-empty {
+  text-align:center; padding:20px; color:var(--text3);
+  font-size:12px; background:var(--white); border-radius:14px;
+  border:1px dashed var(--border);
+}
+
+/* Scheduled Tasks */
+.scheduled-tasks-list {
+  display:flex; flex-direction:column; gap:8px;
+}
+.scheduled-task-item {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 16px; border-radius:14px;
+  background:var(--surface2); border:1px solid var(--border);
+}
+.scheduled-task-name {
+  font-size:14px; font-weight:600; margin-bottom:2px;
+}
+.scheduled-task-time {
+  font-size:11px; color:var(--text3);
+}
+.scheduled-task-status {
+  font-size:11px; font-weight:600; padding:4px 10px; border-radius:10px;
+}
+.scheduled-task-status.active {
+  color:#22c55e; background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.15);
+}
+.scheduled-task-status.paused {
+  color:var(--text3); background:var(--surface3); border:1px solid var(--border);
 }
 
 /* ===== BOTTOM NAV ===== */
@@ -1791,6 +1911,215 @@ body {
   transition:all 0.2s;
 }
 .btn-config-marvis:active { background:var(--surface2); transform:scale(0.98); }
+
+/* ===== OFFICE TOP BAR ===== */
+.office-top-bar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:52px 16px 0; width:100%;
+  background:var(--bg);
+}
+.office-top-left {
+  display:flex; align-items:center; gap:6px;
+}
+.office-top-right {
+  display:flex; align-items:center; gap:6px;
+}
+.office-top-btn {
+  width:36px; height:36px; border-radius:12px;
+  background:transparent; border:none; color:var(--text2);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all 0.2s;
+  position:relative;
+}
+.office-top-btn:active { background:rgba(0,0,0,0.06); transform:scale(0.9); }
+.office-top-btn.btn-devices {
+  background:var(--text); color:#fff;
+  box-shadow:0 2px 12px rgba(22,23,29,0.2);
+}
+.office-top-btn.btn-devices:active { background:#333; transform:scale(0.9); }
+.office-top-btn .top-btn-badge {
+  position:absolute; top:3px; right:3px;
+  width:7px; height:7px; border-radius:50%;
+  background:#22c55e; border:1.5px solid var(--white);
+}
+
+/* ===== SCHEDULED TASK DETAIL ===== */
+.sched-task-detail {
+  display:flex; flex-direction:column; gap:16px;
+}
+.sched-task-card {
+  background:var(--surface2); border-radius:16px; overflow:hidden;
+  border:1px solid var(--border);
+}
+.sched-task-card-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 16px; cursor:pointer;
+}
+.sched-task-card-left {
+  display:flex; align-items:center; gap:10px; flex:1; min-width:0;
+}
+.sched-task-card-icon {
+  width:36px; height:36px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center; font-size:18px;
+  flex-shrink:0;
+}
+.sched-task-card-info { flex:1; min-width:0; }
+.sched-task-card-name { font-size:14px; font-weight:600; }
+.sched-task-card-time { font-size:11px; color:var(--text3); margin-top:1px; }
+.sched-task-card-status {
+  font-size:10px; font-weight:600; padding:3px 10px; border-radius:8px; flex-shrink:0;
+}
+.sched-task-card-status.active { color:#22c55e; background:rgba(34,197,94,0.1); }
+.sched-task-card-status.paused { color:var(--text3); background:var(--surface3); }
+.sched-task-card-body {
+  padding:0 16px 14px; display:none;
+}
+.sched-task-card.open .sched-task-card-body { display:block; }
+.sched-task-strategy {
+  padding:10px 12px; background:var(--white); border-radius:10px;
+  margin-bottom:8px;
+}
+.sched-task-strategy-title {
+  font-size:11px; font-weight:700; color:var(--text3);
+  text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px;
+}
+.sched-task-strategy-text { font-size:12px; color:var(--text2); line-height:1.5; }
+.sched-task-products {
+  display:flex; flex-direction:column; gap:6px;
+}
+.sched-task-product {
+  display:flex; align-items:center; gap:8px;
+  padding:8px 10px; background:var(--white); border-radius:8px;
+  font-size:12px; cursor:pointer; transition:background 0.2s;
+}
+.sched-task-product:active { background:var(--surface2); }
+.sched-task-product-icon { font-size:16px; flex-shrink:0; }
+.sched-task-product-info { flex:1; min-width:0; }
+.sched-task-product-name { font-size:12px; font-weight:600; }
+.sched-task-product-time { font-size:10px; color:var(--text3); }
+.sched-task-expand {
+  font-size:12px; color:var(--text3); transition:transform 0.2s;
+}
+.sched-task-card.open .sched-task-expand { transform:rotate(180deg); }
+
+/* History task item badge */
+.history-item-badge {
+  display:inline-flex; align-items:center; gap:3px;
+  font-size:9px; font-weight:600; padding:2px 8px; border-radius:6px;
+  margin-left:6px; flex-shrink:0;
+}
+.history-item-badge.task-done {
+  color:#22c55e; background:rgba(34,197,94,0.1);
+}
+.history-item-badge.task-time {
+  color:var(--accent); background:rgba(79,110,247,0.08);
+}
+
+/* ===== ARCHIVE ROOM ===== */
+.archive-file-list {
+  display:flex; flex-direction:column; gap:8px;
+}
+.archive-file-item {
+  display:flex; align-items:center; gap:12px;
+  padding:14px; border-radius:14px;
+  background:var(--surface2); cursor:pointer; transition:all 0.2s;
+  border:1px solid var(--border);
+}
+.archive-file-item:active { transform:scale(0.98); background:var(--surface3); }
+.archive-file-icon {
+  width:40px; height:40px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; flex-shrink:0;
+}
+.archive-file-info { flex:1; min-width:0; }
+.archive-file-name { font-size:13px; font-weight:600; }
+.archive-file-meta { font-size:11px; color:var(--text3); margin-top:2px; display:flex; gap:8px; flex-wrap:wrap; }
+.archive-file-tag {
+  display:inline-flex; align-items:center; gap:3px;
+  padding:2px 8px; border-radius:6px; font-size:10px; font-weight:500;
+}
+.archive-file-tag.source { background:rgba(59,130,246,0.08); color:#3b82f6; }
+.archive-file-tag.time { background:rgba(168,85,247,0.06); color:#7c3aed; }
+.archive-file-tag.agent { background:rgba(34,197,94,0.08); color:#16a34a; }
+.archive-empty {
+  text-align:center; padding:32px; color:var(--text3);
+  font-size:13px; background:var(--white); border-radius:14px;
+  border:1px dashed var(--border);
+}
+
+/* Chat archive floating btn */
+.chat-archive-btn {
+  width:34px; height:34px; border-radius:50%;
+  background:var(--surface2); border:none;
+  color:var(--text2); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all 0.2s;
+}
+.chat-archive-btn:active { background:var(--surface3); transform:scale(0.9); }
+
+/* ===== DEVICES MANAGEMENT ===== */
+.devices-list {
+  display:flex; flex-direction:column; gap:8px;
+}
+.device-mgmt-card {
+  display:flex; align-items:center; gap:12px;
+  padding:14px 16px; border-radius:14px;
+  background:var(--surface2); border:2px solid transparent;
+  cursor:pointer; transition:all 0.2s;
+}
+.device-mgmt-card:active { transform:scale(0.98); }
+.device-mgmt-card.active-device { border-color:var(--text); background:rgba(22,23,29,0.03); }
+.device-mgmt-icon {
+  width:44px; height:44px; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; flex-shrink:0;
+}
+.device-mgmt-info { flex:1; min-width:0; }
+.device-mgmt-info h4 { font-size:14px; font-weight:600; }
+.device-mgmt-info p { font-size:11px; color:var(--text3); margin-top:1px; }
+.device-mgmt-status {
+  display:flex; align-items:center; gap:4px;
+  font-size:10px; font-weight:600; padding:3px 10px; border-radius:8px;
+  flex-shrink:0;
+}
+.device-mgmt-status.online { color:#22c55e; background:rgba(34,197,94,0.1); }
+.device-mgmt-status.offline { color:var(--text3); background:var(--surface3); }
+.device-mgmt-switch {
+  width:28px; height:28px; border-radius:8px;
+  background:var(--text); border:none; color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all 0.2s; flex-shrink:0;
+}
+.device-mgmt-switch:active { opacity:0.7; transform:scale(0.9); }
+.btn-add-device {
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  width:100%; padding:13px; border-radius:14px;
+  background:var(--white); color:var(--text);
+  border:1.5px dashed var(--text3);
+  font-size:14px; font-weight:600;
+  cursor:pointer; font-family:inherit;
+  margin-top:10px; transition:all 0.2s;
+}
+.btn-add-device:active { background:var(--surface2); transform:scale(0.98); }
+.add-device-form {
+  padding:16px; background:var(--surface2); border-radius:14px;
+  margin-top:8px; display:none;
+}
+.add-device-form.show { display:block; }
+.add-device-types {
+  display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;
+}
+.add-device-type {
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  padding:12px 8px; border-radius:12px;
+  background:var(--white); border:2px solid transparent;
+  cursor:pointer; transition:all 0.2s;
+  text-align:center;
+}
+.add-device-type:active { transform:scale(0.96); }
+.add-device-type.selected { border-color:var(--text); background:rgba(22,23,29,0.03); }
+.add-device-type-icon { font-size:24px; }
+.add-device-type-name { font-size:12px; font-weight:600; }
+.add-device-type-desc { font-size:10px; color:var(--text3); }
 </style>
 </head>
 <body>
@@ -1801,53 +2130,10 @@ body {
 <div class="setup-overlay" id="setupOverlay">
   <div class="setup-progress" id="setupProgress">
     <div class="setup-progress-dot active"></div>
-    <div class="setup-progress-dot"></div>
-    <div class="setup-progress-dot"></div>
   </div>
   <div class="setup-content">
-    <!-- Step 1: Connect Computer -->
+    <!-- Step 1: Profile (Avatar + Name + Persona) -->
     <div class="setup-step active" id="step1">
-      <div class="setup-avatar-area">
-        <img class="setup-avatar" src="avatar.jpg" alt="Marvis">
-      </div>
-      <div class="setup-title">连接你的电脑</div>
-      <div class="setup-subtitle">将 Marvis 与你的桌面端连接，解锁全部能力</div>
-      <div class="device-cards">
-        <div class="device-card" onclick="selectDeviceAndConnect(this, 'mac')">
-          <div class="device-icon" style="background:linear-gradient(135deg, rgba(59,130,246,0.12), rgba(99,102,241,0.08))">💻</div>
-          <div class="device-info">
-            <h4>Mac 桌面版</h4>
-            <p>通过局域网自动发现并连接</p>
-          </div>
-          <div class="device-check"></div>
-        </div>
-        <div class="device-card" onclick="selectDeviceAndConnect(this, 'win')">
-          <div class="device-icon" style="background:linear-gradient(135deg, rgba(59,130,246,0.12), rgba(99,102,241,0.08))">🖥️</div>
-          <div class="device-info">
-            <h4>Windows 桌面版</h4>
-            <p>扫码配对快速连接</p>
-          </div>
-          <div class="device-check"></div>
-        </div>
-      </div>
-      <!-- Connect flow appears after selection -->
-      <div class="setup-connect-flow" id="setupConnectFlow" style="display:none">
-        <div class="setup-connect-icon">🔗</div>
-        <div class="setup-connect-status" id="setupConnectStatus">正在搜索设备...</div>
-        <div class="setup-connect-steps">
-          <div class="setup-connect-step">
-            <div class="setup-connect-step-num">1</div>
-            <span>确保电脑端 Marvis 已启动</span>
-          </div>
-          <div class="setup-connect-step">
-            <div class="setup-connect-step-num">2</div>
-            <span>保持手机与电脑在同一网络</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Step 2: Profile (Avatar + Name + Persona) -->
-    <div class="setup-step" id="step2">
       <div class="setup-avatar-area" style="margin-bottom:12px;">
         <img class="setup-avatar" src="avatar.jpg" alt="Marvis" style="animation:none;width:72px;height:72px;">
       </div>
@@ -1893,29 +2179,9 @@ body {
         </div>
       </div>
     </div>
-    <!-- Step 3: Preferences -->
-    <div class="setup-step" id="step3">
-      <div class="setup-avatar-area" style="margin-bottom:12px; margin-top:8px;">
-        <img class="setup-avatar" src="avatar.jpg" alt="Marvis" style="width:72px;height:72px;">
-      </div>
-      <div class="setup-title">选择你的喜好</div>
-      <div class="setup-subtitle">告诉我你的兴趣，我将为你精准打工 🔥</div>
-      <div class="skill-chips" id="setupPreferenceChips">
-        <div class="skill-chip" onclick="toggleChip(this)" data-pref="外卖美食">🍜 外卖美食</div>
-        <div class="skill-chip" onclick="toggleChip(this)" data-pref="游戏娱乐">🎮 游戏娱乐</div>
-        <div class="skill-chip" onclick="toggleChip(this)" data-pref="办公学习">💼 办公学习</div>
-        <div class="skill-chip" onclick="toggleChip(this)" data-pref="出行导航">🚗 出行导航</div>
-        <div class="skill-chip" onclick="toggleChip(this)" data-pref="购物比价">🛒 购物比价</div>
-        <div class="skill-chip" onclick="toggleChip(this)" data-pref="健康运动">🏃 健康运动</div>
-        <div class="skill-chip" onclick="toggleChip(this)" data-pref="影音追剧">🎬 影音追剧</div>
-        <div class="skill-chip" onclick="toggleChip(this)" data-pref="社交聊天">💬 社交聊天</div>
-        <div class="skill-chip" onclick="toggleChip(this)" data-pref="理财记账">💰 理财记账</div>
-        <div class="skill-chip" onclick="toggleChip(this)" data-pref="创意设计">🎨 创意设计</div>
-      </div>
-    </div>
   </div>
   <div class="setup-footer">
-    <button class="btn-primary" id="setupNext" onclick="nextSetupStep()">下一步</button>
+    <button class="btn-primary" id="setupNext" onclick="nextSetupStep()">完成设置</button>
     <button class="btn-skip" onclick="skipSetup()">稍后设置</button>
   </div>
 </div>
@@ -1931,7 +2197,7 @@ body {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       </button>
     </div>
-    <button class="btn-icon btn-connect-pc" onclick="openConnectModal()" title="连接电脑">
+    <button class="btn-icon btn-connect-pc" onclick="openDevicesManagement()" title="连接电脑" style="background:var(--text);box-shadow:0 2px 12px rgba(22,23,29,0.2)">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
       <div class="badge"></div>
     </button>
@@ -1993,6 +2259,9 @@ body {
     <button class="btn-new-task" onclick="newTaskFromChat()" title="新建任务">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
+    <button class="chat-archive-btn" onclick="openArchiveRoom()" title="档案室">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+    </button>
     <button class="btn-history" onclick="toggleHistory()" title="历史记录">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
@@ -2052,7 +2321,15 @@ body {
   <div class="history-panel">
     <div class="history-header">
       <h3>历史记录</h3>
-      <button class="btn-close-history" onclick="toggleHistory()">✕</button>
+      <div class="history-header-actions">
+        <button class="history-action-btn" onclick="toggleHistory();startNewChat()" title="新对话">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <button class="history-action-btn" onclick="toggleHistory();openScheduledTasks()" title="定时任务">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </button>
+        <button class="btn-close-history" onclick="toggleHistory()">✕</button>
+      </div>
     </div>
     <div class="history-list" id="historyList"></div>
   </div>
@@ -2061,17 +2338,40 @@ body {
 <!-- ===== OFFICE PAGE (牛马办公室) ===== -->
 <div class="page" id="page-office">
   <div class="office-page">
-    <div class="office-header">
+    <div class="office-top-bar">
+      <div class="office-top-left">
+        <button class="office-top-btn" onclick="toggleHistory()" title="历史对话">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </button>
+        <button class="office-top-btn" onclick="openArchiveRoom()" title="档案室">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+        </button>
+      </div>
+      <div class="office-top-right">
+        <button class="office-top-btn btn-devices" onclick="openDevicesManagement()" title="连接设备">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <span class="top-btn-badge"></span>
+        </button>
+      </div>
+    </div>
+    <div class="office-header" style="padding-top:16px;">
       <h2>牛马办公室</h2>
       <p>马威斯和他的小牛马们，随时为你效劳</p>
     </div>
     <div class="office-marvis-section">
-      <img class="office-marvis-avatar" src="avatar.jpg" alt="Marvis" onclick="document.getElementById('avatarUpload').click()" title="点击更换头像">
+      <div class="office-marvis-avatar-wrap">
+        <img class="office-marvis-avatar" src="avatar.jpg" alt="Marvis" onclick="document.getElementById('avatarUpload').click()" title="点击更换头像">
+        <div class="marvis-task-badge" id="marvisTaskBadge" style="display:none">0</div>
+      </div>
       <input type="file" id="avatarUpload" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)">
       <div class="office-marvis-name" id="officeMarvisName">马威斯 Marvis</div>
       <div class="office-marvis-status">
         <span class="dot"></span>
         已连接电脑 · 在线中
+      </div>
+      <div class="marvis-notification" id="marvisNotification" style="display:none">
+        <div class="marvis-notification-icon">🔔</div>
+        <div class="marvis-notification-text" id="marvisNotificationText"></div>
       </div>
       <button class="btn-primary" style="width:auto;padding:12px 32px;border-radius:24px;font-size:14px;margin-bottom:8px;" onclick="enterHome();document.getElementById('page-home').style.display='';">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;margin-right:6px;"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>开始干活
@@ -2079,6 +2379,7 @@ body {
     </div>
     <div class="office-assistants-title">旗下牛马</div>
     <div class="office-assistants" id="officeAssistants"></div>
+
   </div>
 </div>
 
@@ -2157,7 +2458,7 @@ body {
     <div class="profile-section">
       <div class="profile-section-title">设置</div>
       <div class="profile-menu">
-        <div class="profile-menu-item" onclick="openConnectModal()">
+        <div class="profile-menu-item" onclick="openDevicesManagement()">
           <div class="profile-menu-icon" style="background:linear-gradient(135deg, rgba(59,130,246,0.1), rgba(99,102,241,0.06))">🖥️</div>
           <span>设备管理</span>
           <span class="arrow">›</span>
@@ -2201,26 +2502,26 @@ body {
 
 <!-- Connect Modal -->
 <div class="connect-modal-overlay" id="connectModal" onclick="closeConnectOutside(event)">
-  <div class="connect-modal">
-    <div class="connect-modal-handle"></div>
-    <h3>连接桌面版 Marvis</h3>
+  <div class="connect-modal" style="background:linear-gradient(180deg, #f5f5f7 0%, #fff 40%)">
+    <div class="connect-modal-handle" style="background:rgba(22,23,29,0.15)"></div>
+    <h3 style="color:var(--text)">连接桌面版 Marvis</h3>
     <p>与电脑端配对后，可使用本地文件操控、应用启动等高级技能</p>
     <div class="connect-steps">
-      <div class="connect-step">
-        <div class="connect-step-num">1</div>
-        <span>确保电脑端 Marvis 已启动</span>
+      <div class="connect-step" style="background:rgba(22,23,29,0.04);border-color:rgba(22,23,29,0.08)">
+        <div class="connect-step-num" style="background:var(--text)">1</div>
+        <span style="color:var(--text)">确保电脑端 Marvis 已启动</span>
       </div>
-      <div class="connect-step">
-        <div class="connect-step-num">2</div>
-        <span>保持手机与电脑在同一网络</span>
+      <div class="connect-step" style="background:rgba(22,23,29,0.04);border-color:rgba(22,23,29,0.08)">
+        <div class="connect-step-num" style="background:var(--text)">2</div>
+        <span style="color:var(--text)">保持手机与电脑在同一网络</span>
       </div>
-      <div class="connect-step">
-        <div class="connect-step-num">3</div>
-        <span>点击下方按钮扫码配对</span>
+      <div class="connect-step" style="background:rgba(22,23,29,0.04);border-color:rgba(22,23,29,0.08)">
+        <div class="connect-step-num" style="background:var(--text)">3</div>
+        <span style="color:var(--text)">点击下方按钮扫码配对</span>
       </div>
     </div>
-    <button class="btn-primary" onclick="closeConnectModal()">扫码连接</button>
-    <button class="btn-skip" onclick="closeConnectModal()">稍后再说</button>
+    <button class="btn-primary" onclick="closeConnectModal()" style="background:var(--text);box-shadow:0 4px 16px rgba(22,23,29,0.18)">扫码连接</button>
+    <button class="btn-skip" onclick="closeConnectModal();openDevicesManagement()">管理已有设备</button>
   </div>
 </div>
 
@@ -2396,9 +2697,6 @@ function renderOfficeAssistants() {
         <p>${a.desc}</p>
         ${isWorking ? `<div class="office-assistant-tasks">📋 ${a.tasks} 个任务进行中</div>` : ''}
       </div>
-      <button class="office-assistant-config" onclick="event.stopPropagation();openConfigModal(${idx})" title="配置">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-      </button>
     </div>`;
   });
   // Custom niumas
@@ -2486,6 +2784,7 @@ function init() {
   renderSkills();
   renderHotWords();
   renderOfficeAssistants();
+  renderOfficeHistory();
   loadSavedAvatar();
   applyMarvisName();
   updateProfileStats();
@@ -2551,38 +2850,16 @@ function handleHomeFile(input) {
 
 // ===== SETUP =====
 function nextSetupStep() {
-  const dots = document.querySelectorAll('.setup-progress-dot');
-
-  // Step 2: save profile info + persona
-  if (setupStep === 2) {
-    const nameVal = document.getElementById('setupNameInput').value.trim();
-    if (nameVal) {
-      marvisName = nameVal;
-      localStorage.setItem('marvis_name', nameVal);
-    }
-    savePersona();
+  // Step 1: save profile info + persona
+  const nameVal = document.getElementById('setupNameInput').value.trim();
+  if (nameVal) {
+    marvisName = nameVal;
+    localStorage.setItem('marvis_name', nameVal);
   }
+  savePersona();
 
-  document.getElementById('step' + setupStep).classList.remove('active');
-  dots[setupStep - 1].classList.remove('active');
-  dots[setupStep - 1].classList.add('done');
-  setupStep++;
-
-  if (setupStep > 3) {
-    // Show finish animation before completing
-    showFinishAnimation();
-    return;
-  }
-
-  document.getElementById('step' + setupStep).classList.add('active');
-  dots[setupStep - 1].classList.add('active');
-
-  if (setupStep === 2) {
-    document.getElementById('setupNext').textContent = '下一步';
-  }
-  if (setupStep === 3) {
-    document.getElementById('setupNext').textContent = '完成设置';
-  }
+  // Only 1 step, go directly to finish animation
+  showFinishAnimation();
 }
 
 function skipSetup() { finishSetup(); }
@@ -2728,30 +3005,10 @@ const prefHotWords = {
 };
 
 function showFinishAnimation() {
-  // Collect selected preferences
-  const selected = [];
-  document.querySelectorAll('#setupPreferenceChips .skill-chip.selected').forEach(c => {
-    selected.push(c.dataset.pref);
-  });
-  localStorage.setItem('marvis_prefs', JSON.stringify(selected));
+  const overlay = document.getElementById('setupFinishOverlay');
+  const list = document.getElementById('finishAnimList');
 
-  // Update hotWords based on preferences
-  if (selected.length > 0) {
-    hotWords.length = 0;
-    selected.forEach(p => {
-      if (prefHotWords[p]) hotWords.push(...prefHotWords[p]);
-    });
-    // Add some defaults if too few
-    if (hotWords.length < 3) {
-      hotWords.push(
-        { icon:"📄", bg:"rgba(34,197,94,0.1)", title:"整理桌面文件", desc:"自动分类，告别混乱桌面" },
-        { icon:"🌐", bg:"rgba(14,165,233,0.1)", title:"翻译一段英文文档", desc:"精准翻译，保留原文语义" },
-        { icon:"📅", bg:"rgba(239,68,68,0.1)", title:"安排今日工作计划", desc:"智能规划，提升工作效率" },
-      );
-    }
-  }
-
-  // Build animation items based on prefs
+  // Build animation items
   const animItems = [
     { icon:'🍜', text:'帮你点外卖，比价推荐最划算的' },
     { icon:'🎮', text:'陪你打游戏，查攻略组队开黑' },
@@ -2759,12 +3016,11 @@ function showFinishAnimation() {
     { icon:'🚗', text:'规划出行，导航叫车一步到位' },
   ];
 
-  const overlay = document.getElementById('setupFinishOverlay');
-  const list = document.getElementById('finishAnimList');
   list.innerHTML = animItems.map((item, i) =>
     `<div class="finish-anim-item" data-delay="${(i+1)*400}"><span class="finish-icon">${item.icon}</span><span>${item.text}</span></div>`
   ).join('');
 
+  document.getElementById('finishTitle').textContent = '生成你的个性化牛马中';
   document.getElementById('setupOverlay').classList.add('hidden');
   overlay.classList.add('show');
 
@@ -2827,6 +3083,7 @@ function createNewChat() {
     messages: [{ role:'bot', text:greeting }]
   };
   chats.unshift(chat);
+  renderOfficeHistory();
   openChat(chat.id);
 }
 
@@ -2844,6 +3101,7 @@ function createNewChatWithText(text) {
     messages: [{ role:'bot', text:greeting }, { role:'user', text }]
   };
   chats.unshift(chat);
+  renderOfficeHistory();
   openChat(chat.id);
   // Simulate reply
   setTimeout(() => {
@@ -2870,6 +3128,7 @@ function goBack() {
   switchPage('office');
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   document.querySelector('.nav-item[data-page="office"]').classList.add('active');
+  renderOfficeHistory();
 }
 
 function deleteChat(id) {
@@ -3023,6 +3282,41 @@ function doneVoice() {
 }
 
 // ===== HISTORY SIDEBAR =====
+function renderOfficeHistory() {
+  const list = document.getElementById('officeHistoryList');
+  if (!list) return;
+  let items = '';
+  // Add completed scheduled tasks to office history
+  completedScheduledTasks.forEach(t => {
+    items += `<div class="office-history-card" onclick="openScheduledTasks()">
+      <div class="office-history-card-icon" style="background:rgba(34,197,94,0.08)">${t.icon}</div>
+      <div class="office-history-card-info">
+        <div class="office-history-card-title">${t.title} <span style="font-size:9px;color:#22c55e;font-weight:600;background:rgba(34,197,94,0.1);padding:1px 6px;border-radius:4px;margin-left:4px">✓ 完成</span></div>
+        <div class="office-history-card-msg">定时任务已执行</div>
+      </div>
+      <div class="office-history-card-time" style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+        <span style="font-size:10px;color:var(--accent);background:rgba(79,110,247,0.06);padding:1px 6px;border-radius:4px">⏰ ${t.time}</span>
+      </div>
+    </div>`;
+  });
+  if (chats.length === 0 && completedScheduledTasks.length === 0) {
+    list.innerHTML = '<div class="office-history-empty">暂无对话记录，点击上方「开始干活」开启第一段对话</div>';
+    return;
+  }
+  const recent = chats.slice(0, 5);
+  recent.forEach(c => {
+    items += `<div class="office-history-card" onclick="switchToChat(${c.id})">
+      <div class="office-history-card-icon">${c.icon}</div>
+      <div class="office-history-card-info">
+        <div class="office-history-card-title">${c.title}</div>
+        <div class="office-history-card-msg">${c.lastMsg || ''}</div>
+      </div>
+      <div class="office-history-card-time">${c.time}</div>
+    </div>`;
+  });
+  list.innerHTML = items;
+}
+
 function toggleHistory() {
   document.getElementById('historyOverlay').classList.toggle('open');
   renderHistoryList();
@@ -3032,23 +3326,182 @@ function closeHistoryOutside(e) {
 }
 function renderHistoryList() {
   const list = document.getElementById('historyList');
-  if (chats.length === 0) {
+  let items = '';
+  // Scheduled task completed items
+  completedScheduledTasks.forEach(t => {
+    items += `<div class="history-item" onclick="toggleHistory();openScheduledTasks()" style="opacity:0.85">
+      <span class="history-item-icon">${t.icon}</span>
+      <div class="history-item-text">
+        <div class="history-item-title">${t.title} <span class="history-item-badge task-done">✓ 已完成</span><span class="history-item-badge task-time">⏰ ${t.time}</span></div>
+        <div class="history-item-time">定时任务</div>
+      </div>
+    </div>`;
+  });
+  // Chat items
+  if (chats.length === 0 && completedScheduledTasks.length === 0) {
     list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text3);font-size:13px">暂无历史记录</div>';
     return;
   }
-  list.innerHTML = chats.map(c => `
-    <div class="history-item ${c.id===currentChatId?'current':''}" onclick="switchToChat(${c.id})">
+  chats.forEach(c => {
+    items += `<div class="history-item ${c.id===currentChatId?'current':''}" onclick="switchToChat(${c.id})">
       <span class="history-item-icon">${c.icon}</span>
       <div class="history-item-text">
         <div class="history-item-title">${c.title}</div>
         <div class="history-item-time">${c.time}</div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  });
+  list.innerHTML = items;
 }
 function switchToChat(id) {
   toggleHistory();
   openChat(id);
+}
+
+function startNewChat() {
+  enterHome();
+  document.getElementById('page-home').style.display = '';
+}
+
+function openScheduledTasks() {
+  const tasks = [
+    { id:'t1', time:'每天 09:00', name:'每日工作汇总', icon:'📊', status:'运行中', strategy:'每日自动汇总当天所有对话记录和任务完成情况，生成一份工作总结报告。', products:[
+      { name:'3月30日工作汇总.md', icon:'📄', time:'2026-03-30 09:02', agent:'Marvis' },
+      { name:'3月29日工作汇总.md', icon:'📄', time:'2026-03-29 09:01', agent:'Marvis' },
+    ]},
+    { id:'t2', time:'每天 18:00', name:'今日任务回顾', icon:'📋', status:'运行中', strategy:'每天下班前自动回顾今日布置的任务完成情况，标记未完成项并推送提醒。', products:[
+      { name:'3月30日任务回顾.xlsx', icon:'📊', time:'2026-03-30 18:00', agent:'文件助手' },
+    ]},
+    { id:'t3', time:'每周一 10:00', name:'周工作计划', icon:'📅', status:'运行中', strategy:'每周一自动生成本周工作计划，结合上周任务完成情况和日历安排进行规划。', products:[
+      { name:'第14周工作计划.docx', icon:'📝', time:'2026-03-24 10:00', agent:'Marvis' },
+      { name:'第13周工作计划.docx', icon:'📝', time:'2026-03-17 10:01', agent:'Marvis' },
+    ]},
+    { id:'t4', time:'每月1日 09:00', name:'月度报告生成', icon:'📈', status:'暂停', strategy:'每月初自动整合上月所有数据，生成月度工作报告和数据分析图表。', products:[
+      { name:'2月月度报告.pdf', icon:'📑', time:'2026-03-01 09:05', agent:'数据分析' },
+    ]},
+  ];
+  let html = '<div class="sched-task-detail">';
+  tasks.forEach(t => {
+    html += `<div class="sched-task-card" id="schedCard_${t.id}">
+      <div class="sched-task-card-header" onclick="toggleSchedCard('${t.id}')">
+        <div class="sched-task-card-left">
+          <div class="sched-task-card-icon" style="background:rgba(59,130,246,0.08)">${t.icon}</div>
+          <div class="sched-task-card-info">
+            <div class="sched-task-card-name">${t.name}</div>
+            <div class="sched-task-card-time">${t.time}</div>
+          </div>
+        </div>
+        <span class="sched-task-card-status ${t.status === '运行中' ? 'active' : 'paused'}">${t.status}</span>
+        <span class="sched-task-expand">▼</span>
+      </div>
+      <div class="sched-task-card-body">
+        <div class="sched-task-strategy">
+          <div class="sched-task-strategy-title">运行策略</div>
+          <div class="sched-task-strategy-text">${t.strategy}</div>
+        </div>
+        <div class="sched-task-strategy" style="margin-bottom:0">
+          <div class="sched-task-strategy-title">产物（${t.products.length}）</div>
+          <div class="sched-task-products">
+            ${t.products.map(p => `<div class="sched-task-product" onclick="event.stopPropagation();openArchiveFile('${p.name}','${p.agent}','${p.time}')">
+              <span class="sched-task-product-icon">${p.icon}</span>
+              <div class="sched-task-product-info">
+                <div class="sched-task-product-name">${p.name}</div>
+                <div class="sched-task-product-time">${p.time} · ${p.agent}</div>
+              </div>
+            </div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  html += '<button class="btn-add-niuma" onclick="showAddScheduledTask()" style="margin-top:12px">+ 添加定时任务</button>';
+  html += `<div id="addSchedTaskForm" style="display:none;margin-top:12px;background:var(--surface2);border-radius:14px;padding:16px">
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px">用一句话描述你的定时任务</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px">AI 会自动识别时间和任务内容，例如：「每天早上9点帮我汇总邮件」</div>
+    <textarea id="schedTaskInput" rows="2" placeholder="如：每周五下午5点生成本周工作总结..." style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;resize:none;background:var(--white);outline:none;transition:border 0.2s" onfocus="this.style.borderColor='var(--text)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+    <button onclick="createScheduledTask()" style="width:100%;margin-top:10px;padding:12px;border-radius:12px;background:var(--text);border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.2s">智能识别并创建</button>
+  </div>`;
+  openDetailPanel('定时任务', html);
+}
+
+function toggleSchedCard(id) {
+  const card = document.getElementById('schedCard_' + id);
+  if (card) card.classList.toggle('open');
+}
+
+function openArchiveFile(name, agent, time) {
+  let html = '<div style="text-align:center;padding:20px 0">';
+  html += '<div style="font-size:48px;margin-bottom:16px">📄</div>';
+  html += '<div style="font-size:16px;font-weight:700;margin-bottom:4px">' + name + '</div>';
+  html += '<div style="font-size:12px;color:var(--text3);margin-bottom:16px">' + time + ' · 来源: ' + agent + '</div>';
+  html += '<div style="background:var(--surface2);border-radius:12px;padding:16px;text-align:left;font-size:13px;color:var(--text2);line-height:1.8">';
+  html += '这是由 ' + agent + ' 在 ' + time + ' 自动生成的文件。<br><br>';
+  html += '文件内容预览：<br>';
+  html += '━━━━━━━━━━━━━━━<br>';
+  if (name.includes('汇总')) {
+    html += '今日完成任务 3 项，进行中 2 项。<br>主要工作：数据分析报告、邮件整理、文件归档。<br>建议明日优先处理未完成的代码审查任务。';
+  } else if (name.includes('计划')) {
+    html += '本周重点任务：<br>1. 完成Q1数据报告<br>2. 更新项目文档<br>3. 团队周会准备<br>4. 代码Review';
+  } else if (name.includes('回顾')) {
+    html += '今日任务完成率：85%<br>已完成：邮件回复、文件整理、数据导出<br>未完成：代码审查（进行中）';
+  } else {
+    html += '月度核心数据一览：<br>完成任务总数：127<br>活跃对话：45<br>生成文件：23份';
+  }
+  html += '</div>';
+  // Action buttons: Preview & Open
+  html += '<div style="display:flex;gap:10px;margin-top:16px">';
+  html += '<button onclick="previewFile(\'' + name + '\')" style="flex:1;padding:12px;border-radius:12px;background:var(--surface2);border:none;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>预览</button>';
+  html += '<button onclick="showOpenWith(\'' + name + '\')" style="flex:1;padding:12px;border-radius:12px;background:var(--text);border:none;font-size:14px;font-weight:600;color:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>打开</button>';
+  html += '</div>';
+  html += '</div>';
+  closeDetailPanel();
+  setTimeout(() => openDetailPanel('文件详情', html), 350);
+}
+
+function previewFile(name) {
+  closeDetailPanel();
+  let previewHtml = '<div style="padding:8px 0">';
+  previewHtml += '<div style="background:var(--white);border-radius:14px;padding:20px;border:1px solid var(--border);min-height:300px">';
+  previewHtml += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)">';
+  previewHtml += '<span style="font-size:20px">📄</span>';
+  previewHtml += '<div><div style="font-size:14px;font-weight:700">' + name + '</div></div>';
+  previewHtml += '</div>';
+  previewHtml += '<div style="font-size:13px;color:var(--text2);line-height:2">';
+  if (name.includes('汇总')) {
+    previewHtml += '<b>工作汇总报告</b><br><br>一、今日工作概况<br>完成任务：3 项<br>进行中：2 项<br><br>二、主要工作内容<br>1. 数据分析报告 - 已完成<br>2. 邮件整理 - 已完成<br>3. 文件归档 - 已完成<br>4. 代码审查 - 进行中<br>5. 方案评审 - 进行中<br><br>三、明日计划<br>优先处理代码审查任务';
+  } else if (name.includes('计划')) {
+    previewHtml += '<b>周工作计划</b><br><br>一、本周重点<br>1. 完成Q1数据报告<br>2. 更新项目文档<br>3. 团队周会准备<br>4. 代码Review<br><br>二、时间安排<br>周一：报告初稿<br>周二：文档更新<br>周三：周会准备<br>周四：代码审查<br>周五：总结复盘';
+  } else if (name.includes('回顾')) {
+    previewHtml += '<b>任务回顾</b><br><br>完成率：85%<br><br>已完成任务：<br>- 邮件回复 ✅<br>- 文件整理 ✅<br>- 数据导出 ✅<br><br>未完成：<br>- 代码审查（进行中 60%）';
+  } else {
+    previewHtml += '<b>月度工作报告</b><br><br>完成任务总数：127<br>活跃对话：45<br>生成文件：23份<br><br>效率指标：<br>- 平均响应时间：1.2s<br>- 任务完成率：94%<br>- 用户满意度：4.8/5';
+  }
+  previewHtml += '</div></div></div>';
+  setTimeout(() => openDetailPanel('文件预览', previewHtml), 350);
+}
+
+function showOpenWith(name) {
+  closeDetailPanel();
+  const apps = [
+    { name:'WPS Office', icon:'📗', desc:'文档编辑器', color:'rgba(34,197,94,0.08)' },
+    { name:'微信', icon:'💬', desc:'发送给好友', color:'rgba(34,197,94,0.08)' },
+    { name:'QQ', icon:'🐧', desc:'发送到QQ', color:'rgba(59,130,246,0.08)' },
+    { name:'钉钉', icon:'💎', desc:'发送到钉钉', color:'rgba(59,130,246,0.08)' },
+    { name:'邮件', icon:'✉️', desc:'通过邮件分享', color:'rgba(239,68,68,0.08)' },
+    { name:'文件管理器', icon:'📁', desc:'在文件管理器中打开', color:'rgba(245,158,11,0.08)' },
+  ];
+  let html = '<div style="font-size:12px;color:var(--text3);margin-bottom:12px">选择应用打开「' + name + '」</div>';
+  html += '<div style="display:flex;flex-direction:column;gap:6px">';
+  apps.forEach(a => {
+    html += `<div style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;background:var(--surface2);cursor:pointer;transition:all 0.2s" onclick="this.innerHTML='<div style=\\'text-align:center;padding:4px;color:#22c55e;font-size:13px;font-weight:600\\'>✅ 已发送到 ${a.name}</div>'">
+      <div style="width:40px;height:40px;border-radius:10px;background:${a.color};display:flex;align-items:center;justify-content:center;font-size:20px">${a.icon}</div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:600">${a.name}</div><div style="font-size:11px;color:var(--text3)">${a.desc}</div></div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>`;
+  });
+  html += '</div>';
+  setTimeout(() => openDetailPanel('打开方式', html), 350);
 }
 
 // ===== CONNECT MODAL =====
@@ -3077,7 +3530,7 @@ function renderSkills(filter) {
       : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>';
     const tagLabel = isPC ? '电脑端' : '通用';
     return `
-    <div class="skill-card" onclick="useSkill('${s.name}')">
+    <div class="skill-card" onclick="openSkillPopup(${i})">
       <div class="skill-card-header">
         <div class="skill-card-icon" style="background:${s.bg}">${s.icon}</div>
         <div class="skill-card-title">
@@ -3092,7 +3545,7 @@ function renderSkills(filter) {
           <span class="skill-card-author-dot"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg></span>
           Marvis · ${usersText}人添加
         </div>
-        <button class="${isAdded ? 'btn-skill-use' : 'btn-skill-add'}" onclick="event.stopPropagation();${isAdded ? "useSkill('"+s.name+"')" : ''}">${isAdded ? '使用' : '添加'}</button>
+        <button class="btn-skill-add" onclick="event.stopPropagation();openSkillPopup(${i})">添加</button>
       </div>
     </div>`;
   }).join('');
@@ -3103,7 +3556,7 @@ function filterSkills(q) {
   if (q) list = list.filter(s => s.name.includes(q) || s.desc.includes(q));
   grid.innerHTML = list.map((s, i) => {
     const usersText = s.users >= 10000 ? (s.users/10000).toFixed(1) + '万' : s.users;
-    const isAdded = i < 3;
+    const origIdx = skills.indexOf(s);
     const isPC = s.type === 'desktop';
     const tagClass = isPC ? 'tag-pc' : 'tag-general';
     const tagIcon = isPC
@@ -3111,7 +3564,7 @@ function filterSkills(q) {
       : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>';
     const tagLabel = isPC ? '电脑端' : '通用';
     return `
-    <div class="skill-card" onclick="useSkill('${s.name}')">
+    <div class="skill-card" onclick="openSkillPopup(${origIdx})">
       <div class="skill-card-header">
         <div class="skill-card-icon" style="background:${s.bg}">${s.icon}</div>
         <div class="skill-card-title">
@@ -3126,10 +3579,69 @@ function filterSkills(q) {
           <span class="skill-card-author-dot"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg></span>
           Marvis · ${usersText}人添加
         </div>
-        <button class="${isAdded ? 'btn-skill-use' : 'btn-skill-add'}" onclick="event.stopPropagation();${isAdded ? "useSkill('"+s.name+"')" : ''}">${isAdded ? '使用' : '添加'}</button>
+        <button class="btn-skill-add" onclick="event.stopPropagation();openSkillPopup(${origIdx})">添加</button>
       </div>
     </div>`;
   }).join('');
+}
+
+function openSkillPopup(idx) {
+  const s = skills[idx];
+  if (!s) return;
+  const usersText = s.users >= 10000 ? (s.users/10000).toFixed(1) + '万' : s.users;
+  const isPC = s.type === 'desktop';
+  const skillInsights = {
+    '提示词大师': { intro:'一款专业的提示词优化工具，能显著降低提示词写作门槛并提升效果。支持多种场景模板，自动优化语言表达。', features:['智能提示词优化', '多场景模板', '一键生成专业文档', '支持中英双语'], useCases:['撰写产品需求文档', '生成项目方案', '优化邮件措辞'] },
+    '实时翻译': { intro:'高精度实时翻译工具，支持100+语言互译。保留原文语义和格式，适合文档、网页、对话等多种翻译场景。', features:['100+语言互译', '保留原文格式', '专业术语库', '实时流式翻译'], useCases:['翻译技术文档', '多语言邮件', '学术论文翻译'] },
+    '数据分析': { intro:'强大的数据分析引擎，支持表格数据处理、图表生成和趋势分析。自动发现数据洞察，生成可视化报告。', features:['智能数据清洗', '自动图表生成', '趋势预测', '异常值检测'], useCases:['销售数据分析', '用户行为洞察', '财务报表解读'] },
+    '创意设计': { intro:'AI驱动的创意设计助手，提供配色方案、布局建议和视觉灵感。从概念到设计稿一站式完成。', features:['智能配色推荐', 'UI布局建议', '设计灵感生成', '素材搜索'], useCases:['产品UI设计', '海报制作', '品牌视觉'] },
+    '代码助手': { intro:'全能编程助手，支持多种编程语言的代码编写、调试和审查。智能补全代码，快速定位Bug。', features:['多语言支持', '智能代码补全', 'Bug检测', '代码重构建议'], useCases:['编写Python脚本', 'Web前端开发', 'API接口调试'] },
+    '知识问答': { intro:'百科全书级知识库，覆盖科技、历史、文化等多个领域。提供准确、详尽的解答。', features:['多领域知识库', '精准答案', '来源引用', '深度解释'], useCases:['快速查询概念', '学习新知识', '辅助决策'] },
+  };
+  const info = skillInsights[s.name] || { intro: s.desc + '。这是一款由 Marvis 团队开发的专业技能，帮助你更高效地完成工作。', features:['智能处理', '高效执行', '结果精准', '持续优化'], useCases:['日常办公', '效率提升', '自动化处理'] };
+  
+  let html = '<div style="padding:4px 0">';
+  // Header
+  html += '<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">';
+  html += '<div style="width:56px;height:56px;border-radius:16px;background:' + s.bg + ';display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">' + s.icon + '</div>';
+  html += '<div><div style="font-size:17px;font-weight:800">' + s.name + '</div>';
+  html += '<div style="font-size:12px;color:var(--text3);margin-top:2px">Marvis · ' + usersText + '人添加 · ' + (isPC ? '电脑端' : '通用') + '</div></div>';
+  html += '</div>';
+  // Intro
+  html += '<div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px">' + info.intro + '</div>';
+  // Features
+  html += '<div style="margin-bottom:16px">';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">核心能力</div>';
+  html += '<div style="display:flex;flex-wrap:wrap;gap:6px">';
+  info.features.forEach(f => {
+    html += '<span style="font-size:11px;padding:4px 10px;border-radius:8px;background:' + s.bg + ';font-weight:500">' + f + '</span>';
+  });
+  html += '</div></div>';
+  // Use cases
+  html += '<div style="margin-bottom:16px">';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">使用场景</div>';
+  html += '<div style="display:flex;flex-direction:column;gap:4px">';
+  info.useCases.forEach(u => {
+    html += '<div style="font-size:12px;color:var(--text2);padding:8px 12px;background:var(--surface2);border-radius:8px">💡 ' + u + '</div>';
+  });
+  html += '</div></div>';
+  // Example
+  html += '<div style="margin-bottom:20px">';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">示例用法</div>';
+  html += '<div style="font-size:12px;color:var(--accent);padding:10px 14px;background:rgba(79,110,247,0.05);border-radius:10px;border-left:3px solid var(--accent)">' + s.example + '</div>';
+  html += '</div>';
+  // Add button
+  html += '<button onclick="addSkillFromPopup(' + idx + ')" style="width:100%;padding:14px;border-radius:14px;background:var(--text);border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.2s;letter-spacing:0.3px">添加</button>';
+  html += '</div>';
+  openDetailPanel(s.name, html);
+}
+
+function addSkillFromPopup(idx) {
+  const s = skills[idx];
+  closeDetailPanel();
+  setTimeout(() => {
+    showMarvisNotification('已添加「' + s.name + '」技能 🎉');
+  }, 400);
 }
 function filterSkillType(btn, type) {
   currentSkillFilter = type;
@@ -3394,10 +3906,7 @@ function recustomizeMarvis() {
     s.classList.remove('active');
     if (i === 0) s.classList.add('active');
   });
-  document.getElementById('setupNext').textContent = '下一步';
-  // Reset connect flow
-  const flow = document.getElementById('setupConnectFlow');
-  if (flow) flow.style.display = 'none';
+  document.getElementById('setupNext').textContent = '完成设置';
   // Reset finish overlay
   const finishOverlay = document.getElementById('setupFinishOverlay');
   if (finishOverlay) {
@@ -3588,10 +4097,579 @@ function touchEnd(e, id) {}
 // ===== STATS =====
 function updateStats() {
   updateProfileStats();
+  updateMarvisTaskBadge();
+}
+
+// ===== MARVIS TASK BADGE & NOTIFICATIONS =====
+function getActiveTasks() {
+  return assistants.reduce((sum, a) => sum + (a.tasks || 0), 0);
+}
+
+function updateMarvisTaskBadge() {
+  const badge = document.getElementById('marvisTaskBadge');
+  if (!badge) return;
+  const count = getActiveTasks();
+  if (count > 0) {
+    badge.textContent = count;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+const scheduledNotifications = [
+  { text:'📊 应用助手正在处理 2 个任务', delay:8000 },
+  { text:'📁 文件助手已完成文件整理', delay:20000 },
+  { text:'⏰ 定时任务：每日工作汇总已生成', delay:35000 },
+  { text:'☁️ 云端助手同步完成', delay:50000 },
+];
+
+function startScheduledNotifications() {
+  scheduledNotifications.forEach(n => {
+    setTimeout(() => showMarvisNotification(n.text), n.delay);
+  });
+}
+
+function showMarvisNotification(text) {
+  const el = document.getElementById('marvisNotification');
+  const textEl = document.getElementById('marvisNotificationText');
+  if (!el || !textEl) return;
+  textEl.textContent = text;
+  el.style.display = 'flex';
+  el.style.animation = 'none';
+  el.offsetHeight;
+  el.style.animation = 'notifSlideIn 0.4s ease';
+  setTimeout(() => { el.style.display = 'none'; }, 6000);
+}
+
+// ===== ARCHIVE ROOM =====
+const archiveFiles = [
+  { name:'3月30日工作汇总.md', icon:'📄', time:'2026-03-30 09:02', agent:'Marvis', chat:'每日工作汇总', bg:'rgba(59,130,246,0.08)' },
+  { name:'3月30日任务回顾.xlsx', icon:'📊', time:'2026-03-30 18:00', agent:'文件助手', chat:'今日任务回顾', bg:'rgba(34,197,94,0.08)' },
+  { name:'Q1数据分析报告.pdf', icon:'📑', time:'2026-03-28 14:30', agent:'数据分析', chat:'帮我分析这份数据报表', bg:'rgba(245,158,11,0.08)' },
+  { name:'第14周工作计划.docx', icon:'📝', time:'2026-03-24 10:00', agent:'Marvis', chat:'周工作计划', bg:'rgba(168,85,247,0.08)' },
+  { name:'项目需求文档v2.docx', icon:'📝', time:'2026-03-22 16:45', agent:'提示词大师', chat:'帮我写一份需求文档', bg:'rgba(99,102,241,0.08)' },
+  { name:'客户邮件_回复模板.txt', icon:'✉️', time:'2026-03-20 11:20', agent:'Marvis', chat:'帮我写一封工作邮件', bg:'rgba(239,68,68,0.08)' },
+  { name:'2月月度报告.pdf', icon:'📑', time:'2026-03-01 09:05', agent:'数据分析', chat:'月度报告生成', bg:'rgba(14,165,233,0.08)' },
+  { name:'桌面文件整理清单.md', icon:'📋', time:'2026-02-28 15:30', agent:'文件助手', chat:'整理桌面文件', bg:'rgba(34,197,94,0.08)' },
+];
+
+function openArchiveRoom() {
+  // Get current chat title for prioritizing files from this conversation
+  const currentChat = chats.find(c => c.id === currentChatId);
+  const currentChatTitle = currentChat ? currentChat.title : '';
+  
+  if (archiveFiles.length === 0) {
+    openDetailPanel('档案室', '<div class="archive-empty">暂无文件产物，agent完成任务后会自动归档到这里</div>');
+    return;
+  }
+  // Sort: files from current chat first
+  let sortedFiles = [...archiveFiles];
+  if (currentChatTitle) {
+    sortedFiles.sort((a, b) => {
+      const aMatch = a.chat === currentChatTitle || a.name.includes(currentChatTitle) ? -1 : 0;
+      const bMatch = b.chat === currentChatTitle || b.name.includes(currentChatTitle) ? -1 : 0;
+      return aMatch - bMatch;
+    });
+  }
+  let html = '';
+  // Show current chat files section
+  const chatFiles = currentChatTitle ? sortedFiles.filter(f => f.chat === currentChatTitle || f.name.includes(currentChatTitle)) : [];
+  const otherFiles = currentChatTitle ? sortedFiles.filter(f => f.chat !== currentChatTitle && !f.name.includes(currentChatTitle)) : sortedFiles;
+  
+  if (chatFiles.length > 0) {
+    html += '<div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">本对话产物（' + chatFiles.length + '）</div>';
+    html += '<div class="archive-file-list" style="margin-bottom:16px">';
+    chatFiles.forEach(f => {
+      html += `<div class="archive-file-item" style="border-color:rgba(79,110,247,0.15);background:rgba(79,110,247,0.03)" onclick="openArchiveFile('${f.name}','${f.agent}','${f.time}')">
+        <div class="archive-file-icon" style="background:${f.bg}">${f.icon}</div>
+        <div class="archive-file-info">
+          <div class="archive-file-name">${f.name}</div>
+          <div class="archive-file-meta">
+            <span class="archive-file-tag time">🕐 ${f.time.split(' ')[0]}</span>
+            <span class="archive-file-tag agent">🤖 ${f.agent}</span>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  
+  if (otherFiles.length > 0) {
+    html += '<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">全部文件（' + otherFiles.length + '）</div>';
+    html += '<div class="archive-file-list">';
+    otherFiles.forEach(f => {
+      html += `<div class="archive-file-item" onclick="openArchiveFile('${f.name}','${f.agent}','${f.time}')">
+        <div class="archive-file-icon" style="background:${f.bg}">${f.icon}</div>
+        <div class="archive-file-info">
+          <div class="archive-file-name">${f.name}</div>
+          <div class="archive-file-meta">
+            <span class="archive-file-tag time">🕐 ${f.time.split(' ')[0]}</span>
+            <span class="archive-file-tag agent">🤖 ${f.agent}</span>
+            <span class="archive-file-tag source">💬 ${f.chat}</span>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  openDetailPanel('档案室', html);
+}
+
+// ===== DEVICES MANAGEMENT =====
+let devices = JSON.parse(localStorage.getItem('marvis_devices') || 'null') || [
+  { id:'d1', name:'Windows 台式机', type:'win', icon:'🖥️', status:'online', desc:'i7-13700K · Windows 11', current:true },
+];
+
+function saveDevices() {
+  localStorage.setItem('marvis_devices', JSON.stringify(devices));
+}
+
+function openDevicesManagement() {
+  let html = '<div style="font-size:12px;color:var(--text3);margin-bottom:12px">管理已连接的设备，支持在多台设备间切换</div>';
+  html += '<div class="devices-list">';
+  devices.forEach((d, i) => {
+    html += `<div class="device-mgmt-card ${d.current ? 'active-device' : ''}" style="position:relative">
+      <div class="device-mgmt-icon" style="background:${d.current ? 'rgba(22,23,29,0.06)' : 'var(--surface2)'}">${d.icon}</div>
+      <div class="device-mgmt-info">
+        <h4>${d.name}${d.current ? ' <span style="font-size:10px;color:#22c55e;font-weight:500">当前</span>' : ''}</h4>
+        <p>${d.desc}</p>
+      </div>
+      <span class="device-mgmt-status ${d.status}">${d.status === 'online' ? '● 在线' : '○ 离线'}</span>
+      <div style="display:flex;gap:4px;flex-shrink:0">
+        ${!d.current && d.status === 'online' ? `<button class="device-mgmt-switch" onclick="event.stopPropagation();switchDevice(${i})" title="切换到此设备"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>` : ''}
+        <button class="device-mgmt-switch" onclick="event.stopPropagation();removeDevice(${i})" title="移除设备" style="background:#ef4444"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  html += '<button class="btn-add-device" onclick="showAddDeviceForm()">+ 添加新设备</button>';
+  html += `<div class="add-device-form" id="addDeviceForm">
+    <div style="font-size:13px;font-weight:600;margin-bottom:10px">选择设备类型</div>
+    <div class="add-device-types" id="addDeviceTypes" style="grid-template-columns:1fr 1fr">
+      <div class="add-device-type" onclick="selectDeviceType(this,'win')" data-type="win">
+        <div class="add-device-type-icon">🖥️</div>
+        <div class="add-device-type-name">Windows</div>
+        <div class="add-device-type-desc">Windows PC</div>
+      </div>
+      <div class="add-device-type" onclick="selectDeviceType(this,'cloud')" data-type="cloud">
+        <div class="add-device-type-icon">☁️</div>
+        <div class="add-device-type-name">云电脑</div>
+        <div class="add-device-type-desc">为你创建云容器</div>
+      </div>
+    </div>
+    <div class="employer-field" style="margin-bottom:12px">
+      <label>设备名称</label>
+      <input type="text" id="newDeviceName" placeholder="给设备起个名字">
+    </div>
+    <div class="employer-field" style="margin-bottom:12px">
+      <label>设备描述（可选）</label>
+      <input type="text" id="newDeviceDesc" placeholder="如：i9-13900K · Windows 11">
+    </div>
+    <button class="employer-save-btn" onclick="startPairingFlow()" style="background:var(--text)">配对并添加</button>
+  </div>
+  <div class="pairing-flow" id="pairingFlow" style="display:none">
+    <div style="text-align:center;padding:16px 0">
+      <div class="pairing-animation" id="pairingAnim">
+        <div style="font-size:48px;margin-bottom:12px" id="pairingIcon">📡</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:4px" id="pairingTitle">检查网络环境...</div>
+        <div style="font-size:12px;color:var(--text3)" id="pairingDesc">请确保手机与电脑在同一局域网下</div>
+      </div>
+      <!-- Network check info -->
+      <div id="pairNetworkInfo" style="margin-top:14px;background:var(--surface2);border-radius:12px;padding:14px;text-align:left">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">网络信息</div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--text3)">当前 WiFi</span><span style="font-weight:600" id="pairWifiName">检测中...</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--text3)">局域网 IP</span><span style="font-weight:600" id="pairLocalIP">检测中...</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--text3)">网络状态</span><span style="font-weight:600;color:#f59e0b" id="pairNetStatus">检测中...</span></div>
+      </div>
+      <!-- QR Code area -->
+      <div id="pairQRSection" style="display:none;margin-top:16px">
+        <div style="background:var(--white);border-radius:16px;padding:20px;border:2px solid var(--border);display:inline-block">
+          <div style="width:160px;height:160px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;margin:0 auto;position:relative;overflow:hidden" id="pairQRCode">
+            <div style="display:grid;grid-template-columns:repeat(9,1fr);gap:2px;width:130px;height:130px" id="pairQRGrid"></div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text3);margin-top:10px" id="pairQRHint">请在电脑端打开 Marvis 桌面版扫描此二维码</div>
+        <div style="font-size:11px;color:var(--accent);margin-top:4px" id="pairQRTimer">二维码有效期：<span id="pairCountdown">120</span>秒</div>
+      </div>
+      <!-- Pairing steps -->
+      <div class="pairing-steps" style="margin-top:16px;text-align:left">
+        <div class="pairing-step" id="pairStep1" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;margin-bottom:6px">
+          <span class="pairing-step-icon" style="font-size:16px">⏳</span>
+          <div style="flex:1"><div style="font-size:12px;font-weight:600">检查局域网环境</div><div style="font-size:10px;color:var(--text3)">确认手机与电脑在同一网络</div></div>
+        </div>
+        <div class="pairing-step" id="pairStep2" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;margin-bottom:6px;opacity:0.4">
+          <span class="pairing-step-icon" style="font-size:16px">⏳</span>
+          <div style="flex:1"><div style="font-size:12px;font-weight:600" id="pairStep2Title">生成配对二维码</div><div style="font-size:10px;color:var(--text3)" id="pairStep2Desc">等待电脑端扫码确认</div></div>
+        </div>
+        <div class="pairing-step" id="pairStep3" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;margin-bottom:6px;opacity:0.4">
+          <span class="pairing-step-icon" style="font-size:16px">⏳</span>
+          <div style="flex:1"><div style="font-size:12px;font-weight:600">安全验证</div><div style="font-size:10px;color:var(--text3)">加密握手与身份校验</div></div>
+        </div>
+        <div class="pairing-step" id="pairStep4" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;opacity:0.4">
+          <span class="pairing-step-icon" style="font-size:16px">⏳</span>
+          <div style="flex:1"><div style="font-size:12px;font-weight:600">建立连接通道</div><div style="font-size:10px;color:var(--text3)">完成配对并同步数据</div></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  openDetailPanel('设备管理', html);
+}
+
+let newDeviceType = '';
+function selectDeviceType(el, type) {
+  document.querySelectorAll('.add-device-type').forEach(d => d.classList.remove('selected'));
+  el.classList.add('selected');
+  newDeviceType = type;
+}
+
+function showAddDeviceForm() {
+  const form = document.getElementById('addDeviceForm');
+  if (form) form.classList.toggle('show');
+}
+
+function addNewDevice() {
+  const name = document.getElementById('newDeviceName').value.trim();
+  const desc = document.getElementById('newDeviceDesc').value.trim();
+  if (!name) { alert('请输入设备名称'); return; }
+  if (!newDeviceType) { alert('请选择设备类型'); return; }
+  const icons = { win:'🖥️', cloud:'☁️' };
+  devices.push({
+    id:'d' + Date.now(),
+    name: name,
+    type: newDeviceType,
+    icon: icons[newDeviceType] || '🖥️',
+    status: 'online',
+    desc: desc || (newDeviceType === 'cloud' ? '云容器设备' : 'Windows 设备'),
+    current: false
+  });
+  saveDevices();
+  newDeviceType = '';
+  closeDetailPanel();
+  setTimeout(() => openDevicesManagement(), 350);
+}
+
+function startPairingFlow() {
+  const name = document.getElementById('newDeviceName').value.trim();
+  if (!name) { alert('请输入设备名称'); return; }
+  if (!newDeviceType) { alert('请选择设备类型'); return; }
+  const form = document.getElementById('addDeviceForm');
+  const flow = document.getElementById('pairingFlow');
+  if (form) form.style.display = 'none';
+  if (flow) flow.style.display = 'block';
+
+  const isCloud = newDeviceType === 'cloud';
+
+  // Cloud device: different flow titles
+  if (isCloud) {
+    document.getElementById('pairStep2Title').textContent = '创建云容器';
+    document.getElementById('pairStep2Desc').textContent = '正在分配云资源...';
+  }
+
+  // Step 1: Check network (1.5s)
+  setTimeout(() => {
+    document.getElementById('pairWifiName').textContent = 'Marvis-Office-5G';
+    document.getElementById('pairLocalIP').textContent = '192.168.1.' + (Math.floor(Math.random()*200)+10);
+    document.getElementById('pairNetStatus').innerHTML = '<span style="color:#22c55e">● 已连接</span>';
+    const s1 = document.getElementById('pairStep1');
+    if(s1) { s1.querySelector('.pairing-step-icon').textContent = '✅'; s1.style.background = 'rgba(34,197,94,0.06)'; }
+    document.getElementById('pairingIcon').textContent = isCloud ? '☁️' : '📱';
+    document.getElementById('pairingTitle').textContent = isCloud ? '正在创建云容器...' : '生成配对二维码...';
+    document.getElementById('pairingDesc').textContent = isCloud ? '正在为你分配云容器资源' : '请在电脑端扫描二维码完成配对';
+    const s2 = document.getElementById('pairStep2');
+    if(s2) s2.style.opacity = '1';
+  }, 1500);
+
+  // Step 2: QR code / Cloud creation (3.5s)
+  setTimeout(() => {
+    if (!isCloud) {
+      // Generate QR code
+      const qrSection = document.getElementById('pairQRSection');
+      if (qrSection) qrSection.style.display = 'block';
+      const grid = document.getElementById('pairQRGrid');
+      if (grid) {
+        let qrHtml = '';
+        for (let i = 0; i < 81; i++) {
+          const isCorner = (i < 3 || (i > 5 && i < 9) || i === 9 || i === 17 || i === 18 || i === 26 ||
+            (i >= 54 && i <= 56) || i === 63 || i === 71 || (i >= 72 && i <= 74) ||
+            (i >= 60 && i <= 62) || i === 69 || i === 78 || (i >= 78 && i <= 80));
+          const isBlack = isCorner || Math.random() > 0.5;
+          qrHtml += '<div style="background:' + (isBlack ? 'var(--text)' : 'var(--white)') + ';border-radius:1px"></div>';
+        }
+        grid.innerHTML = qrHtml;
+      }
+      // Start countdown
+      let countdown = 120;
+      const countdownEl = document.getElementById('pairCountdown');
+      const countdownTimer = setInterval(() => {
+        countdown--;
+        if (countdownEl) countdownEl.textContent = countdown;
+        if (countdown <= 0) clearInterval(countdownTimer);
+      }, 1000);
+      window._pairCountdownTimer = countdownTimer;
+    }
+    document.getElementById('pairingTitle').textContent = isCloud ? '分配资源中...' : '等待电脑端扫码...';
+    document.getElementById('pairingDesc').textContent = isCloud ? '预计需要 10~30 秒' : '请在电脑端 Marvis 桌面版扫描二维码';
+  }, 3000);
+
+  // Step 2 done: Simulating scan received (6s)
+  setTimeout(() => {
+    const s2 = document.getElementById('pairStep2');
+    if(s2) { s2.querySelector('.pairing-step-icon').textContent = '✅'; s2.style.background = 'rgba(34,197,94,0.06)'; }
+    if (!isCloud) {
+      document.getElementById('pairQRHint').innerHTML = '<span style="color:#22c55e;font-weight:600">✓ 电脑端已扫码确认</span>';
+      const timer = document.getElementById('pairQRTimer');
+      if (timer) timer.style.display = 'none';
+      if (window._pairCountdownTimer) clearInterval(window._pairCountdownTimer);
+    }
+    document.getElementById('pairingIcon').textContent = '🔐';
+    document.getElementById('pairingTitle').textContent = '安全验证中...';
+    document.getElementById('pairingDesc').textContent = isCloud ? '校验云容器环境...' : '正在进行加密握手和身份校验';
+    const s3 = document.getElementById('pairStep3');
+    if(s3) s3.style.opacity = '1';
+  }, 6000);
+
+  // Step 3 done: Security verified (8s)
+  setTimeout(() => {
+    const s3 = document.getElementById('pairStep3');
+    if(s3) { s3.querySelector('.pairing-step-icon').textContent = '✅'; s3.style.background = 'rgba(34,197,94,0.06)'; }
+    document.getElementById('pairingIcon').textContent = '📡';
+    document.getElementById('pairingTitle').textContent = '建立连接通道...';
+    document.getElementById('pairingDesc').textContent = isCloud ? '挂载存储并同步配置' : '建立端到端加密通道';
+    const s4 = document.getElementById('pairStep4');
+    if(s4) s4.style.opacity = '1';
+  }, 8000);
+
+  // Step 4 done: Connected (10s)
+  setTimeout(() => {
+    const s4 = document.getElementById('pairStep4');
+    if(s4) { s4.querySelector('.pairing-step-icon').textContent = '✅'; s4.style.background = 'rgba(34,197,94,0.06)'; }
+    // Hide QR
+    const qrSection = document.getElementById('pairQRSection');
+    if (qrSection) qrSection.style.display = 'none';
+    document.getElementById('pairingIcon').textContent = '🎉';
+    document.getElementById('pairingTitle').textContent = '配对成功！';
+    document.getElementById('pairingDesc').textContent = isCloud ? '云容器已创建并成功连接' : '设备已通过局域网安全连接';
+    // Show success summary
+    const netInfo = document.getElementById('pairNetworkInfo');
+    if (netInfo) {
+      netInfo.innerHTML = '<div style="font-size:11px;font-weight:700;color:#22c55e;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">✓ 连接成功</div>' +
+        '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--text3)">设备名称</span><span style="font-weight:600">' + name + '</span></div>' +
+        '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--text3)">连接方式</span><span style="font-weight:600">' + (isCloud ? '云端直连' : '局域网 P2P') + '</span></div>' +
+        '<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--text3)">加密状态</span><span style="font-weight:600;color:#22c55e">AES-256 已启用</span></div>';
+    }
+  }, 10000);
+
+  // Add device and return (12s)
+  setTimeout(() => {
+    if (window._pairCountdownTimer) clearInterval(window._pairCountdownTimer);
+    addNewDevice();
+  }, 12000);
+}
+
+function removeDevice(idx) {
+  const d = devices[idx];
+  if (!d) return;
+  if (d.current) {
+    showMarvisNotification('无法移除当前正在使用的设备');
+    return;
+  }
+  // Confirmation
+  const confirmed = confirm('确定要移除设备「' + d.name + '」吗？');
+  if (!confirmed) return;
+  devices.splice(idx, 1);
+  saveDevices();
+  closeDetailPanel();
+  setTimeout(() => openDevicesManagement(), 350);
+  showMarvisNotification('设备「' + d.name + '」已移除');
+}
+
+function switchDevice(idx) {
+  devices.forEach(d => d.current = false);
+  devices[idx].current = true;
+  saveDevices();
+  closeDetailPanel();
+  setTimeout(() => openDevicesManagement(), 350);
+}
+
+// ===== SCHEDULED TASK HISTORY =====
+const completedScheduledTasks = [
+  { title:'每日工作汇总', time:'09:02', icon:'📊', type:'scheduled' },
+  { title:'今日任务回顾', time:'18:00', icon:'📋', type:'scheduled' },
+];
+
+// ===== ADD SCHEDULED TASK =====
+function showAddScheduledTask() {
+  const form = document.getElementById('addSchedTaskForm');
+  if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+function createScheduledTask() {
+  const input = document.getElementById('schedTaskInput');
+  const text = input ? input.value.trim() : '';
+  if (!text) { alert('请输入任务描述'); return; }
+  // AI parsing simulation
+  const parsedTime = parseTimeFromText(text);
+  const parsedTask = parseTaskFromText(text);
+  
+  closeDetailPanel();
+  // Show parsing & debug flow
+  let html = '<div style="text-align:center;padding:16px 0">';
+  html += '<div id="schedCreateFlow">';
+  html += '<div style="font-size:40px;margin-bottom:12px" id="schedCreateIcon">🧠</div>';
+  html += '<div style="font-size:15px;font-weight:700;margin-bottom:4px" id="schedCreateTitle">正在解析...</div>';
+  html += '<div style="font-size:12px;color:var(--text3);margin-bottom:16px" id="schedCreateDesc">AI 正在识别时间和任务内容</div>';
+  // Parsed result card
+  html += '<div id="schedParsedResult" style="display:none;background:var(--surface2);border-radius:14px;padding:16px;text-align:left;margin-bottom:12px">';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">识别结果</div>';
+  html += '<div style="display:flex;gap:8px;margin-bottom:8px">';
+  html += '<span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:8px;color:var(--accent);background:rgba(79,110,247,0.08)">⏰ ' + parsedTime + '</span>';
+  html += '</div>';
+  html += '<div style="font-size:13px;font-weight:600">📋 ' + parsedTask + '</div>';
+  html += '<div style="font-size:11px;color:var(--text3);margin-top:4px">策略：' + text + '</div>';
+  html += '</div>';
+  // Debug steps
+  html += '<div style="text-align:left">';
+  html += '<div class="pairing-step" id="schedStep1" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;margin-bottom:6px">';
+  html += '<span style="font-size:16px">⏳</span><div style="flex:1"><div style="font-size:12px;font-weight:600">识别时间与任务</div><div style="font-size:10px;color:var(--text3)">解析自然语言...</div></div></div>';
+  html += '<div class="pairing-step" id="schedStep2" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;margin-bottom:6px;opacity:0.4">';
+  html += '<span style="font-size:16px">⏳</span><div style="flex:1"><div style="font-size:12px;font-weight:600">创建定时任务</div><div style="font-size:10px;color:var(--text3)">配置执行计划</div></div></div>';
+  html += '<div class="pairing-step" id="schedStep3" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;margin-bottom:6px;opacity:0.4">';
+  html += '<span style="font-size:16px">⏳</span><div style="flex:1"><div style="font-size:12px;font-weight:600">调试运行</div><div style="font-size:10px;color:var(--text3)">试跑一遍验证效果</div></div></div>';
+  html += '<div class="pairing-step" id="schedStep4" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;opacity:0.4">';
+  html += '<span style="font-size:16px">⏳</span><div style="flex:1"><div style="font-size:12px;font-weight:600">生成调试报告</div><div style="font-size:10px;color:var(--text3)">形成对话记录供查看</div></div></div>';
+  html += '</div>';
+  // Debug output
+  html += '<div id="schedDebugOutput" style="display:none;margin-top:12px;background:rgba(22,23,29,0.03);border-radius:12px;padding:14px;text-align:left;border:1px solid var(--border)">';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">调试运行输出</div>';
+  html += '<div style="font-size:12px;color:var(--text2);line-height:1.8" id="schedDebugText"></div>';
+  html += '</div>';
+  // View chat button (hidden initially)
+  html += '<div id="schedViewChatBtn" style="display:none;margin-top:14px">';
+  html += '<button onclick="viewSchedTaskChat()" style="width:100%;padding:13px;border-radius:12px;background:var(--text);border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>查看调试对话记录</button>';
+  html += '</div>';
+  html += '</div></div>';
+
+  // Store task info for chat creation
+  window._schedTaskDebugInfo = { text, parsedTime, parsedTask };
+
+  setTimeout(() => openDetailPanel('创建定时任务', html), 350);
+  // Simulate parsing flow
+  setTimeout(() => {
+    const s1 = document.getElementById('schedStep1');
+    if(s1) { s1.querySelector('span').textContent = '✅'; s1.style.background = 'rgba(34,197,94,0.06)'; }
+    const pr = document.getElementById('schedParsedResult');
+    if(pr) pr.style.display = 'block';
+    document.getElementById('schedCreateIcon').textContent = '⚙️';
+    document.getElementById('schedCreateTitle').textContent = '创建任务中...';
+    document.getElementById('schedCreateDesc').textContent = '正在配置执行计划';
+    const s2 = document.getElementById('schedStep2');
+    if(s2) s2.style.opacity = '1';
+  }, 1500);
+  setTimeout(() => {
+    const s2 = document.getElementById('schedStep2');
+    if(s2) { s2.querySelector('span').textContent = '✅'; s2.style.background = 'rgba(34,197,94,0.06)'; }
+    document.getElementById('schedCreateIcon').textContent = '🧪';
+    document.getElementById('schedCreateTitle').textContent = '调试运行中...';
+    document.getElementById('schedCreateDesc').textContent = '自动试跑一遍检查效果';
+    const s3 = document.getElementById('schedStep3');
+    if(s3) s3.style.opacity = '1';
+  }, 3000);
+  setTimeout(() => {
+    const debugOut = document.getElementById('schedDebugOutput');
+    if(debugOut) { debugOut.style.display = 'block'; }
+    const debugText = document.getElementById('schedDebugText');
+    if(debugText) {
+      debugText.innerHTML = '> 任务触发：' + parsedTime + '<br>> 执行策略：' + text + '<br>> 运行状态：正常<br>> 生成产物：' + parsedTask + '_调试版.md<br>> 产物大小：1.2KB<br><span style="color:#22c55e;font-weight:600">> 调试完成，一切正常！</span>';
+    }
+  }, 4200);
+  setTimeout(() => {
+    const s3 = document.getElementById('schedStep3');
+    if(s3) { s3.querySelector('span').textContent = '✅'; s3.style.background = 'rgba(34,197,94,0.06)'; }
+    document.getElementById('schedCreateIcon').textContent = '📝';
+    document.getElementById('schedCreateTitle').textContent = '生成调试报告...';
+    document.getElementById('schedCreateDesc').textContent = '正在将调试过程写入对话记录';
+    const s4el = document.getElementById('schedStep4');
+    if(s4el) s4el.style.opacity = '1';
+  }, 5500);
+  setTimeout(() => {
+    const s4el = document.getElementById('schedStep4');
+    if(s4el) { s4el.querySelector('span').textContent = '✅'; s4el.style.background = 'rgba(34,197,94,0.06)'; }
+    document.getElementById('schedCreateIcon').textContent = '🎉';
+    document.getElementById('schedCreateTitle').textContent = '任务创建成功！';
+    document.getElementById('schedCreateDesc').textContent = '调试记录已生成，可进入对话查看详情';
+    // Create chat record
+    createSchedTaskDebugChat(text, parsedTime, parsedTask);
+    // Show view chat button
+    const viewBtn = document.getElementById('schedViewChatBtn');
+    if(viewBtn) viewBtn.style.display = 'block';
+  }, 7000);
+}
+
+function createSchedTaskDebugChat(text, parsedTime, parsedTask) {
+  chatIdCounter++;
+  const now = new Date();
+  const t = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  const icons = ['⏰','🤖','📊','🧪'];
+  const chat = {
+    id: chatIdCounter,
+    title: '定时任务调试：' + parsedTask,
+    icon: icons[Math.floor(Math.random() * icons.length)],
+    lastMsg: '调试运行完成，一切正常',
+    time: t,
+    isSchedDebug: true,
+    messages: [
+      { role:'bot', text:'你创建了一个定时任务，我来帮你调试运行一遍。\n\n📋 任务：' + parsedTask + '\n⏰ 时间：' + parsedTime + '\n📝 策略：' + text },
+      { role:'user', text:'开始调试运行' },
+      { role:'bot', text:'正在启动调试...\n\n> 任务触发：' + parsedTime + '\n> 执行策略：' + text + '\n> 运行状态：正常\n> 生成产物：' + parsedTask + '_调试版.md\n> 产物大小：1.2KB\n\n✅ 调试完成，一切正常！任务已成功执行，生成的产物符合预期。' },
+      { role:'user', text:'调试结果如何？' },
+      { role:'bot', text:'调试结果汇总：\n\n🟢 任务状态：正常\n📊 执行耗时：2.3 秒\n📄 产物文件：' + parsedTask + '_调试版.md（1.2KB）\n🔄 下次执行：' + parsedTime + '\n\n本次调试未发现异常，定时任务已正式启用。你可以在「定时任务」面板中管理此任务，也可以随时回到这个对话查看调试记录。' }
+    ]
+  };
+  chats.unshift(chat);
+  window._lastSchedDebugChatId = chat.id;
+  renderOfficeHistory();
+}
+
+function viewSchedTaskChat() {
+  const chatId = window._lastSchedDebugChatId;
+  if (!chatId) return;
+  closeDetailPanel();
+  setTimeout(() => {
+    openChat(chatId);
+  }, 350);
+}
+
+function parseTimeFromText(text) {
+  if (text.includes('每天') || text.includes('每日')) {
+    const m = text.match(/(\d{1,2})[点时:：](\d{0,2})/);
+    return '每天 ' + (m ? (m[1].padStart(2,'0') + ':' + (m[2]||'00').padStart(2,'0')) : '09:00');
+  }
+  if (text.includes('每周')) {
+    const days = ['一','二','三','四','五','六','日'];
+    let day = '一';
+    days.forEach(d => { if(text.includes('周'+d) || text.includes('星期'+d)) day = d; });
+    const m = text.match(/(\d{1,2})[点时:：](\d{0,2})/);
+    return '每周' + day + ' ' + (m ? (m[1].padStart(2,'0') + ':' + (m[2]||'00').padStart(2,'0')) : '10:00');
+  }
+  if (text.includes('每月')) {
+    const m = text.match(/(\d{1,2})[号日]/);
+    const t = text.match(/(\d{1,2})[点时:：](\d{0,2})/);
+    return '每月' + (m ? m[1] : '1') + '日 ' + (t ? (t[1].padStart(2,'0') + ':' + (t[2]||'00').padStart(2,'0')) : '09:00');
+  }
+  const m = text.match(/(\d{1,2})[点时:：](\d{0,2})/);
+  return '每天 ' + (m ? (m[1].padStart(2,'0') + ':' + (m[2]||'00').padStart(2,'0')) : '09:00');
+}
+
+function parseTaskFromText(text) {
+  const cleaned = text.replace(/每天|每日|每周[一二三四五六日]?|每月\d*[号日]?|早上|下午|晚上|上午|中午|\d+[点时:：]\d*/g, '').replace(/帮我|请|自动/g, '').trim();
+  return cleaned || '自定义任务';
 }
 
 // ===== START =====
 init();
+updateMarvisTaskBadge();
+startScheduledNotifications();
 </script>
 </body>
 </html>
